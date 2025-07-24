@@ -1,10 +1,10 @@
 import './MainContent.css';
 import {Route, Routes} from "react-router-dom";
 import {Home} from "../../pages/Home/Home.tsx";
-import {ProjectUploadForm} from "../../pages/AddProjects/ProjectUploadForm.tsx";
 import {Contact} from "../../pages/Contact/Contact.tsx";
 import ViewProjects from "../../pages/ViewProjects/ViewProjects.tsx";
 import SingleProjectPage from "../../pages/ViewProjects/SingleProjectPage.tsx";
+import ProjectUploadForm from "../../pages/AddProjects/ProjectUploadForm.tsx";
 
 export function MainContent() {
     return (
