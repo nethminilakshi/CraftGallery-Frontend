@@ -3,12 +3,15 @@ import {combineReducers} from "redux";
 import homeReducer from "./homeSlice.ts";
 import projectsReducer from "./projectBycategorySlice.ts";
 import singleProjectReducer from "./singleProjectSlice.ts";
+import projectUploadSlice from "./projectUploadSlice.ts";
 
 export const rootReducer = combineReducers({
 
     categories: homeReducer,
     projects : projectsReducer,
-    singleProject: singleProjectReducer
+    singleProject: singleProjectReducer,
+    projectUpload: projectUploadSlice,
+
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

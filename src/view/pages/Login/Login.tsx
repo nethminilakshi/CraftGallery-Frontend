@@ -135,7 +135,7 @@ export function Login() {
                     <div className="text-center mt-8">
                         <p className="text-gray-600 text-lg">
                             Don't have an account?{' '}
-                            <a href="#" className="text-indigo-600 hover:text-indigo-800 font-bold transition-colors">
+                            <a href="/register" className="text-indigo-600 hover:text-indigo-800 font-bold transition-colors">
                                 Create one now
                             </a>
                         </p>
