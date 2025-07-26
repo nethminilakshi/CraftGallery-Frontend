@@ -9,9 +9,10 @@ import type { AppDispatch } from '../../../store/store';
 import { getUserFromToken } from '../../../Auth/auth.ts';
 import type { UserData } from '../../../model/userData.ts';
 
-// Extended UserData interface to include email
+// Extended UserData interface to include email and expiration
 interface ExtendedUserData extends UserData {
     email: string;
+    exp?: number; // JWT expiration timestamp
 }
 
 // Interface for category data
@@ -21,6 +22,13 @@ interface CategoryData {
 
 // Type for categories array
 type CategoriesArray = (CategoryData | string)[];
+
+// Helper function to check if token is expired
+const isTokenExpired = (exp?: number): boolean => {
+    if (!exp) return false;
+    const currentTime = Math.floor(Date.now() / 1000);
+    return currentTime >= exp;
+};
 
 const ProjectUploadForm = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -61,7 +69,7 @@ const ProjectUploadForm = () => {
 
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-    // Check authentication on component mount
+    // Check authentication and token expiration on component mount
     useEffect(() => {
         const checkAuthentication = () => {
             const token = localStorage.getItem('token');
@@ -75,6 +83,19 @@ const ProjectUploadForm = () => {
 
             try {
                 const userData = getUserFromToken(token) as ExtendedUserData;
+
+                // Check if token is expired
+                if (isTokenExpired(userData.exp)) {
+                    // Token expired, clear storage and redirect
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('role');
+                    alert('Your session has expired after 24 hours. Please log in again.');
+                    navigate('/login');
+                    return;
+                }
+
                 if (userData && userData.email) {
                     setCurrentUser(userData);
                     setIsAuthenticated(true);
@@ -100,6 +121,36 @@ const ProjectUploadForm = () => {
         };
 
         checkAuthentication();
+
+        // Set up interval to check token expiration every 5 minutes
+        const tokenCheckInterval = setInterval(() => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const userData = getUserFromToken(token) as ExtendedUserData;
+                    if (isTokenExpired(userData.exp)) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('refreshToken');
+                        localStorage.removeItem('username');
+                        localStorage.removeItem('role');
+                        alert('Your session has expired after 24 hours. Please log in again.');
+                        navigate('/login');
+                    }
+                } catch (error) {
+                    console.error('Token validation error:', error);
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('role');
+                    navigate('/login');
+                }
+            }
+        }, 5 * 60 * 1000); // Check every 5 minutes
+
+        // Cleanup interval on component unmount
+        return () => {
+            clearInterval(tokenCheckInterval);
+        };
     }, [navigate]);
 
     useEffect(() => {
@@ -188,6 +239,28 @@ const ProjectUploadForm = () => {
             return;
         }
 
+        // Double check token expiration before submitting
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const userData = getUserFromToken(token) as ExtendedUserData;
+                if (isTokenExpired(userData.exp)) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('role');
+                    alert('Your session has expired. Please log in again.');
+                    navigate('/login');
+                    return;
+                }
+            } catch (error) {
+                console.error('Token validation error:', error);
+                alert('Session validation failed. Please log in again.');
+                navigate('/login');
+                return;
+            }
+        }
+
         const validationError = validateForm();
         if (validationError) {
             alert(validationError);
@@ -251,6 +324,11 @@ const ProjectUploadForm = () => {
                         <div>
                             <p className="font-semibold text-gray-800">Welcome, {currentUser.username || 'User'}!</p>
                             <p className="text-sm text-gray-600">{currentUser.email}</p>
+                            {currentUser.exp && (
+                                <p className="text-xs text-gray-500">
+                                    Session expires: {new Date(currentUser.exp * 1000).toLocaleString()}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <button
