@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, UserPlus, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface UserDto {
-    id: string;
+    id?: string;
     email: string;
     firstName: string;
     lastName: string;
     password?: string;
-    role: 'USER' | 'ADMIN';
+    role: 'USER' ;
 }
 
 const UserRegisterForm = () => {
@@ -24,6 +24,7 @@ const UserRegisterForm = () => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [registeredUser, setRegisteredUser] = useState<UserDto | null>(null);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -69,6 +70,38 @@ const UserRegisterForm = () => {
         return null;
     };
 
+    const registerUser = async (userData: Omit<UserDto, 'id'>) => {
+        try {
+            console.log('Registering user with data:', userData);
+
+            // Actual API call to backend
+            const response = await fetch('/api/user/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            });
+
+            // Check if response is ok
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Registration failed: ${response.status} ${response.statusText}`);
+            }
+
+            // Return the created user data
+            const result = await response.json();
+            return result;
+
+        } catch (error) {
+            // Handle network errors or other issues
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                throw new Error('Network error: Unable to connect to server. Please check your connection.');
+            }
+            throw error;
+        }
+    };
+
     const handleSubmit = async () => {
         const validationError = validateForm();
         if (validationError) {
@@ -86,17 +119,15 @@ const UserRegisterForm = () => {
                 firstName: formData.firstName.trim(),
                 lastName: formData.lastName.trim(),
                 password: formData.password,
-                role: 'USER' // Default role
+                role: 'USER'
             };
 
-            // Here you would call your registration API
-            // const response = await registerUser(userData);
-            console.log('User data to be sent:', userData);
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const result = await registerUser(userData);
 
             setSuccess(true);
+            setRegisteredUser(result);
+
+            // Reset form
             setFormData({
                 email: '',
                 firstName: '',
@@ -105,14 +136,15 @@ const UserRegisterForm = () => {
                 confirmPassword: ''
             });
 
-            // Hide success message after 5 seconds
+
             setTimeout(() => {
                 setSuccess(false);
+                setRegisteredUser(null);
             }, 5000);
 
         } catch (error) {
             console.error('Registration error:', error);
-            setError('Registration failed. Please try again.');
+            setError(error instanceof Error ? error.message : 'Registration failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -132,15 +164,20 @@ const UserRegisterForm = () => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 p-4 flex items-center justify-center">
             <div className="w-full max-w-md">
                 {/* Success Message */}
-                {success && (
+                {success && registeredUser && (
                     <div className="mb-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-2xl shadow-lg animate-bounce">
                         <div className="flex items-center gap-3">
                             <CheckCircle size={24} />
                             <div>
                                 <h3 className="font-bold text-lg">🎉 Registration Successful!</h3>
                                 <p className="text-green-100 text-sm">
-                                    Welcome to our community! You can now log in.
+                                    Welcome {registeredUser.firstName}! Your account has been created.
                                 </p>
+                                {registeredUser.id && (
+                                    <p className="text-green-100 text-xs mt-1">
+                                        User ID: {registeredUser.id}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -366,15 +403,9 @@ const UserRegisterForm = () => {
                             <div className="text-center pt-4">
                                 <p className="text-sm text-gray-600">
                                     Already have an account?{' '}
-                                    <button
-                                        type="button"
-                                        className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
-                                        disabled={loading}
-                                    >
-                                        <a href="/login" className="text-indigo-600 hover:text-indigo-800 font-bold transition-colors">
-                                            Sign In
-                                        </a>
-                                    </button>
+                                    <a href="/login" className="text-indigo-600 hover:text-indigo-800 font-bold transition-colors hover:underline">
+                                        Sign In
+                                    </a>
                                 </p>
                             </div>
                         </div>

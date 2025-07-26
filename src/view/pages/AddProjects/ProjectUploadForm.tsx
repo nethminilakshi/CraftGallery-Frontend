@@ -1,20 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Plus, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../../slices/rootReducer';
 import { getAllCategories } from '../../../slices/homeSlice';
 import { uploadProject, clearUploadState, clearError } from '../../../slices/projectUploadSlice';
 import type { AppDispatch } from '../../../store/store';
+import { getUserFromToken } from '../../../Auth/auth.ts';
+import type { UserData } from '../../../model/userData.ts';
+
+// Extended UserData interface to include email
+interface ExtendedUserData extends UserData {
+    email: string;
+}
+
+// Interface for category data
+interface CategoryData {
+    category: string;
+}
+
+// Type for categories array
+type CategoriesArray = (CategoryData | string)[];
 
 const ProjectUploadForm = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
+
+    // Check if user is logged in and get user data
+    const [currentUser, setCurrentUser] = useState<ExtendedUserData | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     // Get categories from Redux store
     const {
         categories,
         loading: categoriesLoading,
         error: categoriesError
-    } = useSelector((state: RootState) => state.categories || state.projectUpload || {});
+    } = useSelector((state: RootState) => state.categories || state.projectUpload || {}) as {
+        categories?: CategoriesArray;
+        loading?: boolean;
+        error?: string;
+    };
 
     // Get upload state from Redux store
     const {
@@ -31,18 +56,58 @@ const ProjectUploadForm = () => {
         materials: [''],
         steps: [''],
         imageUrl: '',
-        author: '',
-        uploadedUserEmail: ''
+        author: ''
     });
 
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
+    // Check authentication on component mount
     useEffect(() => {
-        // Fetch categories if not already loaded
-        if ((!categories || categories.length === 0) && !categoriesLoading) {
+        const checkAuthentication = () => {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                // No token, redirect to login
+                alert('Please log in to upload projects');
+                navigate('/login');
+                return;
+            }
+
+            try {
+                const userData = getUserFromToken(token) as ExtendedUserData;
+                if (userData && userData.email) {
+                    setCurrentUser(userData);
+                    setIsAuthenticated(true);
+                } else {
+                    // Invalid token, redirect to login
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('role');
+                    alert('Your session has expired. Please log in again.');
+                    navigate('/login');
+                }
+            } catch (error) {
+                // Token parsing failed, redirect to login
+                console.error('Token parsing error:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('username');
+                localStorage.removeItem('role');
+                alert('Invalid session. Please log in again.');
+                navigate('/login');
+            }
+        };
+
+        checkAuthentication();
+    }, [navigate]);
+
+    useEffect(() => {
+        // Fetch categories if user is authenticated and categories not loaded
+        if (isAuthenticated && (!categories || categories.length === 0) && !categoriesLoading) {
             dispatch(getAllCategories());
         }
-    }, [dispatch, categories, categoriesLoading]);
+    }, [dispatch, categories, categoriesLoading, isAuthenticated]);
 
     // Handle upload success
     useEffect(() => {
@@ -56,8 +121,7 @@ const ProjectUploadForm = () => {
                 materials: [''],
                 steps: [''],
                 imageUrl: '',
-                author: '',
-                uploadedUserEmail: ''
+                author: ''
             });
 
             // Hide success message after 5 seconds
@@ -96,22 +160,11 @@ const ProjectUploadForm = () => {
     };
 
     const validateForm = () => {
-        const requiredFields = ['title', 'category', 'description', 'author', 'uploadedUserEmail'];
+        const requiredFields = ['title', 'category', 'description', 'author'];
         const emptyFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
 
         if (emptyFields.length > 0) {
-            return `Please fill in: ${emptyFields.map(field => {
-                switch(field) {
-                    case 'uploadedUserEmail': return 'Email';
-                    default: return field;
-                }
-            }).join(', ')}`;
-        }
-
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.uploadedUserEmail)) {
-            return 'Please enter a valid email address';
+            return `Please fill in: ${emptyFields.join(', ')}`;
         }
 
         const validMaterials = formData.materials.filter(m => m.trim());
@@ -129,6 +182,12 @@ const ProjectUploadForm = () => {
     };
 
     const handleSubmit = async () => {
+        if (!isAuthenticated || !currentUser) {
+            alert('Please log in to upload projects');
+            navigate('/login');
+            return;
+        }
+
         const validationError = validateForm();
         if (validationError) {
             alert(validationError);
@@ -147,7 +206,7 @@ const ProjectUploadForm = () => {
             steps: formData.steps.filter((s: string) => s.trim()),
             imageUrl: sanitizedImageUrl,
             author: formData.author,
-            uploadedUserEmail: formData.uploadedUserEmail
+            uploadedUserEmail: currentUser.email // Get email from JWT token
         };
 
         try {
@@ -157,9 +216,51 @@ const ProjectUploadForm = () => {
         }
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('username');
+        localStorage.removeItem('role');
+        alert('Successfully logged out!');
+        navigate('/login');
+    };
+
+    // Don't render the form if user is not authenticated
+    if (!isAuthenticated || !currentUser) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+                <div className="bg-white/70 backdrop-blur-sm shadow-2xl rounded-3xl border border-white/20 p-8 text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Checking authentication...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 p-4">
             <div className="max-w-2xl mx-auto">
+                {/* User Info and Logout */}
+                <div className="mb-6 bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-white/20 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">
+                                {currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U'}
+                            </span>
+                        </div>
+                        <div>
+                            <p className="font-semibold text-gray-800">Welcome, {currentUser.username || 'User'}!</p>
+                            <p className="text-sm text-gray-600">{currentUser.email}</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleLogout}
+                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                        Logout
+                    </button>
+                </div>
+
                 {/* Success Message */}
                 {showSuccessMessage && uploadedProject && (
                     <div className="mb-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-2xl shadow-lg animate-pulse">
@@ -211,23 +312,6 @@ const ProjectUploadForm = () => {
 
                         <div className="group">
                             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                📧 Your Email
-                                <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                name="uploadedUserEmail"
-                                type="email"
-                                value={formData.uploadedUserEmail}
-                                onChange={handleInputChange}
-                                className="w-full p-3 text-xs bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:bg-white transition-all duration-300 hover:border-gray-300"
-                                placeholder="your.email@example.com"
-                                disabled={uploadLoading}
-                                required
-                            />
-                        </div>
-
-                        <div className="group">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                                 📝 Project Title
                                 <span className="text-red-500">*</span>
                             </label>
@@ -266,9 +350,9 @@ const ProjectUploadForm = () => {
                                             : 'Choose your category...'
                                     }
                                 </option>
-                                {!categoriesLoading && !categoriesError && categories && categories.map((categoryObj: any, index: number) => (
-                                    <option key={index} value={categoryObj.category || categoryObj}>
-                                        {categoryObj.category || categoryObj}
+                                {!categoriesLoading && !categoriesError && categories && categories.map((categoryObj: CategoryData | string, index: number) => (
+                                    <option key={index} value={typeof categoryObj === 'string' ? categoryObj : categoryObj.category}>
+                                        {typeof categoryObj === 'string' ? categoryObj : categoryObj.category}
                                     </option>
                                 ))}
                             </select>

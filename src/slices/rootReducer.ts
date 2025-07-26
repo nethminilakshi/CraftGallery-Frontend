@@ -4,6 +4,7 @@ import homeReducer from "./homeSlice.ts";
 import projectsReducer from "./projectBycategorySlice.ts";
 import singleProjectReducer from "./singleProjectSlice.ts";
 import projectUploadSlice from "./projectUploadSlice.ts";
+import userRegisterSlice from "./userRegisterSlice.ts";
 
 export const rootReducer = combineReducers({
 
@@ -11,7 +12,7 @@ export const rootReducer = combineReducers({
     projects : projectsReducer,
     singleProject: singleProjectReducer,
     projectUpload: projectUploadSlice,
-
+    userRegister: userRegisterSlice,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
