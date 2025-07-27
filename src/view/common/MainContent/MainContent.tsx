@@ -17,6 +17,7 @@ export function MainContent() {
                 <Route path="/project/:id" element={<SingleProjectPage />} />
                 <Route path="/contact" element={<Contact/>}/>
                 <Route path="/my-projects" element={<MyProjects />} />
+
             </Routes>
         </div>
     );

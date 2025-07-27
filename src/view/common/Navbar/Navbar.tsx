@@ -1,8 +1,19 @@
-import { Palette, Menu } from 'lucide-react';
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
+import {Menu, Palette} from "lucide-react";
 import {Link} from "react-router-dom";
 
 export const Navbar = () => {
+
+    const [userRole , setUserRole]  = useState<string | null>(null);
+    useEffect(()=>{
+
+         const storedRole = localStorage.getItem("role");
+
+         setUserRole(storedRole)// "USER"
+
+
+
+    } , [])
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -40,6 +51,15 @@ export const Navbar = () => {
                         <a href="/contact" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
                             Contact
                         </a>
+
+                        { userRole === "ADMIN" ? (
+                            <a href="/admin/mainCOntent"
+                               className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium">Go To
+                                Dashboard</a>
+                        ) : (
+                            <p>
+
+                        </p> )}
                         <div>
                             <Link className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium" to="/login">
                                 <button className="w-full mt-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-full font-medium">
@@ -78,6 +98,16 @@ export const Navbar = () => {
                         <a href="/contact" className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium">
                             Contact
                         </a>
+
+                        { userRole === "ADMIN" ? (
+                            <a href="/admin/mainContent"
+                               className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium">Go To
+                                Dashboard</a>
+                        ) : (
+                            <p>
+
+                            </p> )}
+                        </div>
                         <div>
                             <Link className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium" to="/login">
                                 <button className="w-full mt-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-full font-medium">
@@ -87,7 +117,6 @@ export const Navbar = () => {
                         </div>
                     </div>
                 </div>
-            </div>
         </nav>
     );
 };
