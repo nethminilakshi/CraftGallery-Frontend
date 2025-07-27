@@ -26,7 +26,7 @@ export const Navbar = () => {
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center space-x-8">
                         <a href="/" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
-                         Home
+                            Home
                         </a>
                         {/*<a href="/viewProjects" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">*/}
                         {/*    Browse Projects*/}
@@ -34,6 +34,9 @@ export const Navbar = () => {
                         <a href="/addProjects" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
                             Upload
                         </a>
+                        <Link to="/my-projects" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
+                            My Projects
+                        </Link>
                         <a href="/contact" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
                             Contact
                         </a>
@@ -60,7 +63,7 @@ export const Navbar = () => {
                 {/* Mobile Menu */}
                 <div id="mobile-menu" className={`md:hidden bg-white/90 backdrop-blur-md rounded-b-2xl shadow-lg transition-all duration-300 ${isMenuOpen ? 'block' : 'hidden'}`}>
                     <div className="px-2 pt-2 pb-3 space-y-1">
-                        <a href="/" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
+                        <a href="/" className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium transition-colors">
                             Home
                         </a>
                         <a href="/viewProjects" className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium">
@@ -69,14 +72,17 @@ export const Navbar = () => {
                         <a href="/addProjects" className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium">
                             Upload
                         </a>
+                        <Link to="/my-projects" className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium">
+                            My Projects
+                        </Link>
                         <a href="/contact" className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium">
-                           Contact
+                            Contact
                         </a>
                         <div>
                             <Link className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium" to="/login">
-                        <button className="w-full mt-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-full font-medium">
-                            Sign In
-                        </button>
+                                <button className="w-full mt-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-full font-medium">
+                                    Sign In
+                                </button>
                             </Link>
                         </div>
                     </div>
