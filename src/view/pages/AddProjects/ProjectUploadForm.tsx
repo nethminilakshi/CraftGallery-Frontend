@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {Upload, Plus, X, CheckCircle, AlertCircle, Sparkles, Heart} from 'lucide-react';
+import {Upload, Plus, X, CheckCircle, AlertCircle, Sparkles, Heart, Mail, Send} from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../../slices/rootReducer';
 import { getAllCategories } from '../../../slices/homeSlice';
-import { uploadProject, clearUploadState, clearError } from '../../../slices/projectUploadSlice';
+import { uploadProject, clearUploadState, clearError, testEmail } from '../../../slices/projectUploadSlice';
 import type { AppDispatch } from '../../../store/store';
 import { getUserFromToken } from '../../../Auth/auth.ts';
 import type { UserData } from '../../../model/userData.ts';
@@ -49,12 +49,14 @@ const ProjectUploadForm = () => {
         error?: string;
     };
 
-    // Get upload state from Redux store
+    // Get upload state from Redux store - Updated to include email fields
     const {
         loading: uploadLoading,
         error: uploadError,
         success: uploadSuccess,
-        uploadedProject
+        uploadedProject,
+        emailSent,
+        successMessage
     } = useSelector((state: RootState) => state.projectUpload);
 
     const [formData, setFormData] = useState({
@@ -68,6 +70,8 @@ const ProjectUploadForm = () => {
     });
 
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [testEmailAddress, setTestEmailAddress] = useState('');
+    const [showEmailTest, setShowEmailTest] = useState(false);
 
     // Check authentication and token expiration on component mount
     useEffect(() => {
@@ -75,7 +79,6 @@ const ProjectUploadForm = () => {
             const token = localStorage.getItem('token');
 
             if (!token) {
-                // No token, redirect to login
                 alert('Please log in to upload projects');
                 navigate('/login');
                 return;
@@ -84,9 +87,7 @@ const ProjectUploadForm = () => {
             try {
                 const userData = getUserFromToken(token) as ExtendedUserData;
 
-                // Check if token is expired
                 if (isTokenExpired(userData.exp)) {
-                    // Token expired, clear storage and redirect
                     localStorage.removeItem('token');
                     localStorage.removeItem('refreshToken');
                     localStorage.removeItem('username');
@@ -100,7 +101,6 @@ const ProjectUploadForm = () => {
                     setCurrentUser(userData);
                     setIsAuthenticated(true);
                 } else {
-                    // Invalid token, redirect to login
                     localStorage.removeItem('token');
                     localStorage.removeItem('refreshToken');
                     localStorage.removeItem('username');
@@ -109,7 +109,6 @@ const ProjectUploadForm = () => {
                     navigate('/login');
                 }
             } catch (error) {
-                // Token parsing failed, redirect to login
                 console.error('Token parsing error:', error);
                 localStorage.removeItem('token');
                 localStorage.removeItem('refreshToken');
@@ -122,7 +121,6 @@ const ProjectUploadForm = () => {
 
         checkAuthentication();
 
-        // Set up interval to check token expiration every 5 minutes
         const tokenCheckInterval = setInterval(() => {
             const token = localStorage.getItem('token');
             if (token) {
@@ -145,22 +143,20 @@ const ProjectUploadForm = () => {
                     navigate('/login');
                 }
             }
-        }, 5 * 60 * 1000); // Check every 5 minutes
+        }, 5 * 60 * 1000);
 
-        // Cleanup interval on component unmount
         return () => {
             clearInterval(tokenCheckInterval);
         };
     }, [navigate]);
 
     useEffect(() => {
-        // Fetch categories if user is authenticated and categories not loaded
         if (isAuthenticated && (!categories || categories.length === 0) && !categoriesLoading) {
             dispatch(getAllCategories());
         }
     }, [dispatch, categories, categoriesLoading, isAuthenticated]);
 
-    // Handle upload success
+    // Handle upload success - Updated to show email confirmation
     useEffect(() => {
         if (uploadSuccess && uploadedProject) {
             setShowSuccessMessage(true);
@@ -175,11 +171,11 @@ const ProjectUploadForm = () => {
                 author: ''
             });
 
-            // Hide success message after 5 seconds
+            // Hide success message after 8 seconds (longer to show email status)
             const timer = setTimeout(() => {
                 setShowSuccessMessage(false);
                 dispatch(clearUploadState());
-            }, 5000);
+            }, 8000);
 
             return () => clearTimeout(timer);
         }
@@ -187,7 +183,6 @@ const ProjectUploadForm = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({...formData, [e.target.name]: e.target.value});
-        // Clear error when user starts typing
         if (uploadError) {
             dispatch(clearError());
         }
@@ -239,7 +234,6 @@ const ProjectUploadForm = () => {
             return;
         }
 
-        // Double check token expiration before submitting
         const token = localStorage.getItem('token');
         if (token) {
             try {
@@ -279,7 +273,7 @@ const ProjectUploadForm = () => {
             steps: formData.steps.filter((s: string) => s.trim()),
             imageUrl: sanitizedImageUrl,
             author: formData.author,
-            uploadedUserEmail: currentUser.email // Get email from JWT token
+            uploadedUserEmail: currentUser.email
         };
 
         try {
@@ -289,16 +283,23 @@ const ProjectUploadForm = () => {
         }
     };
 
-    // const handleLogout = () => {
-    //     localStorage.removeItem('token');
-    //     localStorage.removeItem('refreshToken');
-    //     localStorage.removeItem('username');
-    //     localStorage.removeItem('role');
-    //     alert('Successfully logged out!');
-    //     navigate('/login');
-    // };
+    // Test email functionality
+    const handleTestEmail = async () => {
+        if (!testEmailAddress) {
+            alert('Please enter an email address');
+            return;
+        }
 
-    // Don't render the form if user is not authenticated
+        try {
+            await dispatch(testEmail(testEmailAddress));
+            setTestEmailAddress('');
+            alert('Test email sent! Check your inbox.');
+        } catch (error) {
+            console.error('Test email error:', error);
+            alert('Failed to send test email');
+        }
+    };
+
     if (!isAuthenticated || !currentUser) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-fuchsia-50 via-purple-50 to-blue-100 flex items-center justify-center p-4">
@@ -313,22 +314,34 @@ const ProjectUploadForm = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-fuchsia-100 via-purple-100 to-blue-200 p-4">
             <div className="max-w-5xl mx-auto">
-                {/* Success Message */}
+                {/* Enhanced Success Message with Email Status */}
                 {showSuccessMessage && uploadedProject && (
                     <div className="mb-8 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white p-6 rounded-3xl shadow-2xl animate-bounce">
                         <div className="flex items-center gap-4">
                             <div className="bg-white/20 p-2 rounded-full">
                                 <CheckCircle size={28} />
                             </div>
-                            <div>
+                            <div className="flex-1">
                                 <h3 className="font-bold text-xl flex items-center gap-2">
                                     <Sparkles size={20} />
                                     Project Created Successfully!
                                     <Heart size={20} className="text-pink-200" />
                                 </h3>
-                                <p className="text-green-100 text-sm font-medium">
+                                <p className="text-green-100 text-sm font-medium mb-2">
                                     "{uploadedProject.title}" has been shared with the community!
                                 </p>
+                                {/* Email Status Indicator */}
+                                <div className="flex items-center gap-2 text-sm">
+                                    <Mail size={16} />
+                                    <span className={emailSent ? "text-green-100" : "text-yellow-200"}>
+                                        {emailSent
+                                            ? "📧 Confirmation email sent to your inbox!"
+                                            : "📤 Sending confirmation email..."}
+                                    </span>
+                                </div>
+                                {successMessage && (
+                                    <p className="text-xs text-green-200 mt-1">{successMessage}</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -360,9 +373,8 @@ const ProjectUploadForm = () => {
                 {/* Main Form Container */}
                 <div className="bg-white/90 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/40 overflow-hidden">
 
-                    {/* Header with User Info and Logout */}
+                    {/* Header with User Info and Email Test */}
                     <div className="bg-gradient-to-r from-fuchsia-600 via-purple-700 to-blue-600 p-8 relative overflow-hidden">
-                        {/* Decorative Elements */}
                         <div className="absolute top-0 left-0 w-full h-full">
                             <div className="absolute top-4 left-8 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
                             <div className="absolute top-12 right-12 w-16 h-16 bg-fuchsia-300/20 rounded-full animate-bounce"></div>
@@ -381,15 +393,10 @@ const ProjectUploadForm = () => {
                                 </p>
                             </div>
 
-                            {/* User Info & Logout */}
+                            {/* User Info & Email Test */}
                             <div className="flex items-center gap-4">
                                 <div className="text-right">
                                     <div className="flex items-center gap-3 mb-2">
-                                        {/*<div className="w-12 h-12 bg-gradient-to-r from-pink-400 to-fuchsia-500 rounded-full flex items-center justify-center shadow-lg">*/}
-                                        {/*    <span className="text-white font-bold text-lg">*/}
-                                        {/*        {currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U'}*/}
-                                        {/*    </span>*/}
-                                        {/*</div>*/}
                                         <div>
                                             <p className="font-bold text-white text-lg">Welcome, {currentUser.username || 'Creator'}!</p>
                                             <p className="text-purple-200 text-sm">{currentUser.email}</p>
@@ -400,12 +407,46 @@ const ProjectUploadForm = () => {
                                             Session expires: {new Date(currentUser.exp * 1000).toLocaleString()}
                                         </p>
                                     )}
+
+                                    {/* Email Test Button (Development) */}
+                                    {process.env.NODE_ENV === 'development' && (
+                                        <button
+                                            onClick={() => setShowEmailTest(!showEmailTest)}
+                                            className="mt-2 text-xs text-purple-200 hover:text-white underline"
+                                        >
+                                            Test Email 📧
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
+
+                        {/* Email Test Section (Development Only) */}
+                        {showEmailTest && process.env.NODE_ENV === 'development' && (
+                            <div className="mt-6 p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                                <h4 className="text-white font-medium mb-2">Test Email Functionality</h4>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="email"
+                                        value={testEmailAddress}
+                                        onChange={(e) => setTestEmailAddress(e.target.value)}
+                                        placeholder="Enter email to test"
+                                        className="flex-1 px-3 py-2 rounded-lg text-gray-800 text-sm"
+                                    />
+                                    <button
+                                        onClick={handleTestEmail}
+                                        disabled={uploadLoading}
+                                        className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        <Send size={14} />
+                                        Send Test
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Form Content */}
+                    {/* Form Content - Keep all your existing form fields */}
                     <div className="p-8 space-y-8" style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
 
                         {/* Project Title */}
@@ -614,19 +655,12 @@ const ProjectUploadForm = () => {
                                     </>
                                 )}
                             </button>
-
-                            {/*<button*/}
-                            {/*    onClick={handleLogout}*/}
-                            {/*    className="flex items-center gap-2 mt-4 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-2xl font-medium transition-all duration-300 border border-white/30 hover:border-white/50 shadow-lg hover:shadow-xl transform hover:scale-105"*/}
-                            {/*>*/}
-                            {/*    <LogOut size={18} />*/}
-                            {/*    Logout*/}
-                            {/*</button>*/}
                         </div>
                     </div>
                 </div>
             </div>
-        </div>    );
+        </div>
+    );
 };
 
 export default ProjectUploadForm;

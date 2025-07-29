@@ -12,24 +12,23 @@ export interface Project {
     description: string;
     materials: string[];
     steps: string[];
-    imageUrl?: string;
+    imageUrl: string;
     author: string;
     uploadedUserEmail: string;
-    createdAt: string;
-    updatedAt?: string;
+    createdAt: Date | string;
 }
 
+// Updated API response interfaces to match backend
 export interface ApiErrorResponse {
-    success: boolean;
-    message: string;
-    error?: string;
+    success?: boolean;
+    error: string;
+    message?: string;
 }
 
 export interface ApiSuccessResponse<T> {
     success: boolean;
-    message?: string;
-    project?: T;
-    projects?: T[];
+    message: string;
+    project: T;
 }
 
 export interface ProjectUploadState {
@@ -37,6 +36,8 @@ export interface ProjectUploadState {
     error: string | null;
     success: boolean;
     uploadedProject: Project | null;
+    emailSent: boolean; // New field to track email status
+    successMessage: string | null; // Store the success message from backend
 }
 
 const initialState: ProjectUploadState = {
@@ -44,14 +45,15 @@ const initialState: ProjectUploadState = {
     error: null,
     success: false,
     uploadedProject: null,
-
+    emailSent: false,
+    successMessage: null,
 };
 
 // Helper function to extract error message
 const getErrorMessage = (error: unknown): string => {
     if (error instanceof AxiosError) {
         const apiError = error.response?.data as ApiErrorResponse;
-        return apiError?.message || error.message || 'An error occurred';
+        return apiError?.error || apiError?.message || error.message || 'An error occurred';
     }
 
     if (error instanceof Error) {
@@ -67,19 +69,60 @@ const getErrorMessage = (error: unknown): string => {
 
 // Upload Project Async Thunk
 export const uploadProject = createAsyncThunk<
-    Project,
-    Omit<Project, '_id' | 'createdAt' | 'updatedAt'>,
+    ApiSuccessResponse<Project>,
+    Omit<Project, '_id' | 'createdAt' | 'id'>, // Backend auto-generates id and createdAt
     { rejectValue: string }
 >(
     'projectUpload/uploadProject',
     async (projectData, { rejectWithValue }) => {
         try {
+            // Send only the required data, let backend handle id and createdAt generation
             const response = await backendApi.post<ApiSuccessResponse<Project>>('/project/save', {
-                ...projectData,
-                createdAt: new Date().toISOString(),
+                title: projectData.title,
+                category: projectData.category,
+                description: projectData.description,
+                materials: projectData.materials,
+                steps: projectData.steps,
+                imageUrl: projectData.imageUrl,
+                author: projectData.author,
+                uploadedUserEmail: projectData.uploadedUserEmail
             });
 
-            return response.data.project || response.data as unknown as Project;
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(getErrorMessage(error));
+        }
+    }
+);
+
+// Update Project Async Thunk (if you need it)
+export const updateProject = createAsyncThunk<
+    ApiSuccessResponse<Project>,
+    { id: string; updateData: Partial<Project> },
+    { rejectValue: string }
+>(
+    'projectUpload/updateProject',
+    async ({ id, updateData }, { rejectWithValue }) => {
+        try {
+            const response = await backendApi.put<ApiSuccessResponse<Project>>(`/project/update/${id}`, updateData);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(getErrorMessage(error));
+        }
+    }
+);
+
+// Test Email Async Thunk (for development)
+export const testEmail = createAsyncThunk<
+    { success: boolean; message: string },
+    string,
+    { rejectValue: string }
+>(
+    'projectUpload/testEmail',
+    async (email, { rejectWithValue }) => {
+        try {
+            const response = await backendApi.post('/project/test-email', { email });
+            return response.data;
         } catch (error) {
             return rejectWithValue(getErrorMessage(error));
         }
@@ -96,12 +139,19 @@ const projectUploadSlice = createSlice({
             state.error = null;
             state.success = false;
             state.uploadedProject = null;
+            state.emailSent = false;
+            state.successMessage = null;
         },
         clearError: (state) => {
             state.error = null;
         },
         resetSuccess: (state) => {
             state.success = false;
+            state.emailSent = false;
+            state.successMessage = null;
+        },
+        setEmailSent: (state, action: PayloadAction<boolean>) => {
+            state.emailSent = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -111,19 +161,56 @@ const projectUploadSlice = createSlice({
                 state.loading = true;
                 state.error = null;
                 state.success = false;
+                state.emailSent = false;
+                state.successMessage = null;
             })
-            .addCase(uploadProject.fulfilled, (state, action: PayloadAction<Project>) => {
+            .addCase(uploadProject.fulfilled, (state, action: PayloadAction<ApiSuccessResponse<Project>>) => {
                 state.loading = false;
                 state.success = true;
-                state.uploadedProject = action.payload;
+                state.uploadedProject = action.payload.project;
+                state.successMessage = action.payload.message;
+                // Check if message mentions email to set emailSent flag
+                state.emailSent = action.payload.message.toLowerCase().includes('email');
             })
             .addCase(uploadProject.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || 'Upload failed';
                 state.success = false;
+                state.emailSent = false;
+            })
+        // Update Project
+        builder
+            .addCase(updateProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateProject.fulfilled, (state, action: PayloadAction<ApiSuccessResponse<Project>>) => {
+                state.loading = false;
+                state.success = true;
+                state.uploadedProject = action.payload.project;
+                state.successMessage = action.payload.message;
+                state.emailSent = action.payload.message.toLowerCase().includes('email');
+            })
+            .addCase(updateProject.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || 'Update failed';
+            })
+        // Test Email
+        builder
+            .addCase(testEmail.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(testEmail.fulfilled, (state, action) => {
+                state.loading = false;
+                state.successMessage = action.payload.message;
+            })
+            .addCase(testEmail.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || 'Test email failed';
             });
     },
 });
 
-export const { clearUploadState, clearError, resetSuccess } = projectUploadSlice.actions;
+export const { clearUploadState, clearError, resetSuccess, setEmailSent } = projectUploadSlice.actions;
 export default projectUploadSlice.reducer;

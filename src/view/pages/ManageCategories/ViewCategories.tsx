@@ -185,9 +185,9 @@ const ViewCategoriesPage = () => {
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={handleAddCategory}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-medium rounded-lg hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 transition-all duration-300 shadow-md hover:shadow-lg text-sm"
                             >
-                                <Plus size={18} />
+                                <Plus size={16} />
                                 Add Category
                             </button>
                         </div>
