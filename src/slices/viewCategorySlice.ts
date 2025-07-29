@@ -1,14 +1,12 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { backendApi } from "../api";
 
-// Category DTO interface
 export interface CategoryDto {
     id?: string;
     category: string;
     description: string;
 }
 
-// State interface
 interface CategoryState {
     categories: CategoryDto[];
     loading: boolean;
@@ -17,7 +15,6 @@ interface CategoryState {
     isSubmitting: boolean;
 }
 
-// Initial state
 const initialState: CategoryState = {
     categories: [],
     loading: false,
@@ -26,7 +23,6 @@ const initialState: CategoryState = {
     isSubmitting: false,
 };
 
-// Async thunks using backendApi
 export const fetchCategories = createAsyncThunk(
     'categories/fetchCategories',
     async (_, { rejectWithValue }) => {
@@ -83,7 +79,6 @@ export const deleteCategory = createAsyncThunk(
     }
 );
 
-// Category slice
 const categorySlice = createSlice({
     name: 'categories',
     initialState,
@@ -102,7 +97,6 @@ const categorySlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        // Fetch Categories
         builder
             .addCase(fetchCategories.pending, (state) => {
                 state.loading = true;
@@ -117,7 +111,6 @@ const categorySlice = createSlice({
                 state.error = action.payload as string;
             });
 
-        // Add Category
         builder
             .addCase(addCategory.pending, (state) => {
                 state.isSubmitting = true;
@@ -132,7 +125,6 @@ const categorySlice = createSlice({
                 state.error = action.payload as string;
             });
 
-        // Update Category
         builder
             .addCase(updateCategory.pending, (state) => {
                 state.isSubmitting = true;
@@ -153,7 +145,6 @@ const categorySlice = createSlice({
                 state.error = action.payload as string;
             });
 
-        // Delete Category
         builder
             .addCase(deleteCategory.pending, (state) => {
                 state.isSubmitting = true;
@@ -177,7 +168,6 @@ export const {
     clearError,
     setSelectedCategory,
     clearSelectedCategory,
-    resetCategoryState,
 } = categorySlice.actions;
 
 export default categorySlice.reducer;

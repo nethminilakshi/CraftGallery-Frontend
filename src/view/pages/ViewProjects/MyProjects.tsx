@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Trash2, Calendar, User, Tag, ArrowLeft, RefreshCw, LogOut } from 'lucide-react';
-import { getUserFromToken, isTokenExpired } from '../../../Auth/auth.ts'; // Added isTokenExpired import
+import { Eye, Trash2, Calendar, User, Tag, ArrowLeft, RefreshCw, LogOut, Edit, Save, X } from 'lucide-react';
+import { getUserFromToken, isTokenExpired } from '../../../Auth/auth.ts';
 import type { UserData } from '../../../model/userData.ts';
 import { backendApi } from '../../../api.ts';
 
-// Extended UserData interface to include email and JWT properties
 interface ExtendedUserData extends UserData {
     email: string;
-    exp?: number; // JWT expiration timestamp
-    iat?: number; // JWT issued at timestamp (optional)
+    exp?: number;
+    iat?: number;
 }
 
-// Project interface
 interface Project {
     _id?: string;
     id: string;
@@ -23,24 +21,20 @@ interface Project {
     steps: string[];
     imageUrl?: string;
     author: string;
-    uprloadedUserEmail: string; // Fixed typo: uploadedUserEmail
+    uprloadedUserEmail: string;
     createdAt: string;
     updatedAt?: string;
 }
 
-// Constants
 const SESSION_DURATION_HOURS = 24;
 const SESSION_DURATION_MS = SESSION_DURATION_HOURS * 60 * 60 * 1000;
 
-// Helper functions
 const isSessionExpired = (loginTime?: number): boolean => {
     if (!loginTime) return false;
     const currentTime = Date.now();
     const sessionDuration = currentTime - loginTime;
     return sessionDuration >= SESSION_DURATION_MS;
 };
-
-// Removed duplicate isTokenExpired function since we're importing it from auth.ts
 
 const MyProjects = () => {
     const navigate = useNavigate();
@@ -52,27 +46,26 @@ const MyProjects = () => {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [showModal, setShowModal] = useState(false);
 
-    // Check authentication
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editingProject, setEditingProject] = useState<Project | null>(null);
+    const [updating, setUpdating] = useState(false);
+
     useEffect(() => {
-        console.log('Authentication check started');
 
         const checkAuthentication = () => {
             const token = localStorage.getItem('token');
             const loginTime = localStorage.getItem('loginTime');
 
-            console.log('Token from localStorage:', !!token);
-            console.log('LoginTime from localStorage:', loginTime);
+
 
             if (!token) {
-                console.log(' No token found - redirecting to login');
                 alert('Please log in to view your projects');
                 navigate('/login');
                 return;
             }
 
-            // Check if 24 hours have passed since login
             if (loginTime && isSessionExpired(parseInt(loginTime))) {
-                console.log(' Session expired - clearing localStorage');
+                console.log('Session expired - clearing localStorage');
                 localStorage.removeItem('token');
                 localStorage.removeItem('refreshToken');
                 localStorage.removeItem('username');
@@ -85,11 +78,8 @@ const MyProjects = () => {
 
             try {
                 const userData = getUserFromToken(token) as ExtendedUserData;
-                console.log('👤 Decoded user data:', userData);
 
-                // Using imported isTokenExpired function
                 if (isTokenExpired(token)) {
-                    console.log(' JWT token expired - clearing localStorage');
                     localStorage.removeItem('token');
                     localStorage.removeItem('refreshToken');
                     localStorage.removeItem('username');
@@ -105,11 +95,10 @@ const MyProjects = () => {
                         ...userData,
                         loginTime: loginTime ? parseInt(loginTime) : Date.now()
                     };
-                    console.log(' Authentication successful, setting user:', userWithLoginTime);
                     setCurrentUser(userWithLoginTime);
                     setIsAuthenticated(true);
                 } else {
-                    console.log(' Invalid user data - no email found');
+                    console.log('Invalid user data - no email found');
                     localStorage.removeItem('token');
                     localStorage.removeItem('refreshToken');
                     localStorage.removeItem('username');
@@ -119,7 +108,7 @@ const MyProjects = () => {
                     navigate('/login');
                 }
             } catch (error) {
-                console.error(' Token parsing error:', error);
+                console.error('Error parsing token or user data:', error);
                 localStorage.removeItem('token');
                 localStorage.removeItem('refreshToken');
                 localStorage.removeItem('username');
@@ -136,12 +125,8 @@ const MyProjects = () => {
     // Fetch user's projects
     useEffect(() => {
         const fetchMyProjects = async () => {
-            console.log(' fetchMyProjects called');
-            console.log('- isAuthenticated:', isAuthenticated);
-            console.log('- currentUser:', currentUser);
-
             if (!isAuthenticated) {
-                console.log(' Not authenticated, skipping fetch');
+                console.log('Not authenticated, skipping fetch');
                 return;
             }
 
@@ -150,18 +135,13 @@ const MyProjects = () => {
                 return;
             }
 
-            console.log(' Starting to fetch projects...');
+            console.log('Starting to fetch projects...');
             setLoading(true);
             setError(null);
 
             try {
                 const token = localStorage.getItem('token');
-                console.log(' Token exists:', !!token);
-                console.log('User email:', currentUser.email);
-
                 const url = `/project/user/${encodeURIComponent(currentUser.email)}`;
-                console.log(' API URL:', url);
-                console.log(' Full URL will be:', `${backendApi.defaults.baseURL}${url}`);
 
                 const response = await backendApi.get(url, {
                     headers: {
@@ -169,48 +149,26 @@ const MyProjects = () => {
                     }
                 });
 
-                console.log(' Raw API Response:', response);
-                console.log(' Response Status:', response.status);
-                console.log(' Response Data:', response.data);
-
                 if (response.data && response.data.success) {
                     const projectsData = response.data.projects || [];
-                    console.log('📊 Projects array:', projectsData);
-                    console.log('📊 Projects count:', projectsData.length);
+
                     setProjects(projectsData);
                 } else {
-                    console.log('⚠️ API returned success: false or no data');
                     setError('Failed to fetch projects - API returned success: false');
                 }
             } catch (error: any) {
-                console.error(' API Call Failed:', error);
-                console.error(' Error message:', error.message);
-
-                if (error.response) {
-                    console.error(' Response status:', error.response.status);
-                    console.error(' Response data:', error.response.data);
-                    console.error(' Response headers:', error.response.headers);
-                } else if (error.request) {
-                    console.error(' No response received:', error.request);
-                } else {
-                    console.error(' Request setup error:', error.message);
-                }
 
                 if (error.response?.status === 401) {
-                    console.log(' Unauthorized - redirecting to login');
                     alert('Session expired. Please log in again.');
                     navigate('/login');
                 } else if (error.response?.status === 404) {
-                    console.log('📭 No projects found (404)');
                     setProjects([]);
                     setError(null);
                 } else {
                     const errorMessage = `Failed to load projects: ${error.response?.data?.error || error.message}`;
-                    console.log(' Setting error:', errorMessage);
                     setError(errorMessage);
                 }
             } finally {
-                console.log(' Setting loading to false');
                 setLoading(false);
             }
         };
@@ -220,7 +178,76 @@ const MyProjects = () => {
 
     const handleViewProject = (project: Project) => {
         setSelectedProject(project);
+        setEditingProject({ ...project });
+        setIsEditMode(false);
         setShowModal(true);
+    };
+
+    const handleEditProject = () => {
+        setIsEditMode(true);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditMode(false);
+        setEditingProject(selectedProject ? { ...selectedProject } : null);
+    };
+
+    const handleUpdateProject = async () => {
+        if (!editingProject || !selectedProject) return;
+
+        setUpdating(true);
+        try {
+            const token = localStorage.getItem('token');
+            const projectId = editingProject.id || editingProject._id;
+
+            const updateData = {
+                title: editingProject.title,
+                category: editingProject.category,
+                description: editingProject.description,
+                materials: editingProject.materials,
+                steps: editingProject.steps,
+                author: editingProject.author
+            };
+
+            console.log('Updating project:', projectId, updateData);
+
+            const response = await backendApi.put(`/project/update/${projectId}`, updateData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Update response:', response.data);
+
+            if (response.data && response.data.success) {
+                const updatedProjects = projects.map(p =>
+                    (p.id === projectId || p._id === projectId)
+                        ? { ...p, ...updateData, updatedAt: new Date().toISOString() }
+                        : p
+                );
+                setProjects(updatedProjects);
+
+                const updatedProject = { ...editingProject, updatedAt: new Date().toISOString() };
+                setSelectedProject(updatedProject);
+                setEditingProject(updatedProject);
+                setIsEditMode(false);
+
+                alert('Project updated successfully!');
+            } else {
+                throw new Error(response.data?.message || 'Update failed');
+            }
+        } catch (error: any) {
+            console.error('Error updating project:', error);
+            if (error.response?.status === 401) {
+                alert('Session expired. Please log in again.');
+                navigate('/login');
+            } else {
+                alert(`Failed to update project: ${error.response?.data?.message || error.message}`);
+            }
+        } finally {
+            setUpdating(false);
+        }
     };
 
     const handleDeleteProject = async (projectId: string) => {
@@ -231,15 +258,21 @@ const MyProjects = () => {
         try {
             const token = localStorage.getItem('token');
 
-            // ✅ Updated delete endpoint to match your backend route structure
             await backendApi.delete(`/project/delete/${projectId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
 
-            // Remove project from local state
             setProjects(projects.filter(p => p.id !== projectId && p._id !== projectId));
+
+            if (selectedProject && (selectedProject.id === projectId || selectedProject._id === projectId)) {
+                setShowModal(false);
+                setSelectedProject(null);
+                setEditingProject(null);
+                setIsEditMode(false);
+            }
+
             alert('Project deleted successfully!');
         } catch (error: any) {
             console.error('Error deleting project:', error);
@@ -250,6 +283,30 @@ const MyProjects = () => {
                 alert('Failed to delete project. Please try again.');
             }
         }
+    };
+
+    const handleInputChange = (field: keyof Project, value: string | string[]) => {
+        if (!editingProject) return;
+        setEditingProject({ ...editingProject, [field]: value });
+    };
+
+    const handleArrayFieldChange = (field: 'materials' | 'steps', index: number, value: string) => {
+        if (!editingProject) return;
+        const newArray = [...editingProject[field]];
+        newArray[index] = value;
+        setEditingProject({ ...editingProject, [field]: newArray });
+    };
+
+    const addArrayItem = (field: 'materials' | 'steps') => {
+        if (!editingProject) return;
+        const newArray = [...editingProject[field], ''];
+        setEditingProject({ ...editingProject, [field]: newArray });
+    };
+
+    const removeArrayItem = (field: 'materials' | 'steps', index: number) => {
+        if (!editingProject) return;
+        const newArray = editingProject[field].filter((_, i) => i !== index);
+        setEditingProject({ ...editingProject, [field]: newArray });
     };
 
     const handleLogout = () => {
@@ -284,7 +341,6 @@ const MyProjects = () => {
                 <div className="mb-8 bg-white/80 backdrop-blur-lg rounded-3xl p-8 border border-white/40 shadow-xl">
                     <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-6">
-
                             <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
                                 My Projects
                             </h1>
@@ -297,13 +353,11 @@ const MyProjects = () => {
                                 <RefreshCw size={16} />
                                 Refresh
                             </button>
-
                         </div>
                     </div>
 
                     {/* User Info */}
                     <div className="flex items-center gap-4">
-
                         <div>
                             <p className="font-bold text-gray-800 text-xl">{currentUser.username || 'User'}</p>
                             <p className="text-sm text-gray-600 font-medium">{currentUser.email}</p>
@@ -351,7 +405,6 @@ const MyProjects = () => {
                                     Create Your First Project
                                 </button>
                                 <div className="flex items-center gap-6 py-4">
-                                    {/* Buttons side by side */}
                                     <button
                                         onClick={() => navigate('/')}
                                         className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -417,7 +470,7 @@ const MyProjects = () => {
                                                     <span className="text-xs text-gray-600 font-medium">{project.author}</span>
                                                 </div>
 
-                                                <p className="text-gray-600 text-xs mb-4 line-clamp-3 leading-relaxed">
+                                                <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
                                                     {project.description}
                                                 </p>
 
@@ -429,17 +482,17 @@ const MyProjects = () => {
                                                 </div>
 
                                                 {/* Action Buttons */}
-                                                <div className="flex gap-3">
+                                                <div className="flex gap-2">
                                                     <button
                                                         onClick={() => handleViewProject(project)}
-                                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl text-xs font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl text-xs font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                                     >
                                                         <Eye size={14} />
                                                         View
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteProject(project.id || project._id!)}
-                                                        className="px-4 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-xl text-xs font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                                        className="px-3 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-xl text-xs font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                                     >
                                                         <Trash2 size={14} />
                                                     </button>
@@ -453,29 +506,64 @@ const MyProjects = () => {
                     </>
                 )}
 
-                {/* Project Detail Modal */}
-                {showModal && selectedProject && (
+                {/* Project Detail/Edit Modal */}
+                {showModal && selectedProject && editingProject && (
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                        <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-white/50">
-                            <div className="bg-gradient-to-r from-black-100 via-white to-gray-200 p-4">
+                        <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden border border-white/50">
+                            <div className="bg-gradient-to-r from-gray-100 via-white to-gray-200 p-4">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-gray-800">{selectedProject.title}</h2>
-                                    <button
-                                        onClick={() => setShowModal(false)}
-                                        className="text-gray-600 hover:bg-gray-200/50 rounded-full p-2 transition-all duration-300 hover:scale-110"
-                                    >
-                                        <span className="text-xl">✕</span>
-                                    </button>
+                                    <h2 className="text-2xl font-bold text-gray-800">
+                                        {isEditMode ? 'Edit Project' : selectedProject.title}
+                                    </h2>
+                                    <div className="flex items-center gap-2">
+                                        {!isEditMode ? (
+                                            <button
+                                                onClick={handleEditProject}
+                                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg text-sm font-semibold transition-all duration-300"
+                                            >
+                                                <Edit size={16} />
+                                                Edit
+                                            </button>
+                                        ) : (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={handleUpdateProject}
+                                                    disabled={updating}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-800 to-emerald-300 hover:from-pink-600 hover:to-white-600 text-white rounded-lg text-sm font-semibold transition-all duration-300 disabled:opacity-50"
+                                                >
+                                                    <Save size={16} />
+                                                    {updating ? 'Saving...' : 'Save'}
+                                                </button>
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg text-sm font-semibold transition-all duration-300"
+                                                >
+                                                    <X size={16} />
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => {
+                                                setShowModal(false);
+                                                setIsEditMode(false);
+                                                setEditingProject(null);
+                                            }}
+                                            className="text-gray-600 hover:bg-gray-200/50 rounded-full p-2 transition-all duration-300 hover:scale-110"
+                                        >
+                                            <span className="text-xl">✕</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div className="p-8 overflow-y-auto max-h-[calc(90vh-140px)]">
                                 {selectedProject.imageUrl && (
                                     <div className="mb-8 flex justify-center">
-                                        <div className="w-full max-w-2xl">
+                                        <div className="pb-6 flex justify-center w-full max-w-2xl">
                                             <img
                                                 src={selectedProject.imageUrl}
                                                 alt={selectedProject.title}
-                                                className="w-full h-80 object-cover rounded-3xl shadow-xl"
+                                                className="w-80 h-80 object-cover rounded-3xl shadow-xl"
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
                                                     target.style.display = 'none';
@@ -488,33 +576,150 @@ const MyProjects = () => {
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                     <div>
                                         <h3 className="text-xl font-bold text-gray-800 mb-4 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Project Info</h3>
-                                        <div className="space-y-3 mb-6">
-                                            <p className="text-sm"><span className="font-semibold text-gray-700">Category:</span> <span className="text-purple-600 font-medium">{selectedProject.category}</span></p>
-                                            <p className="text-sm"><span className="font-semibold text-gray-700">Author:</span> <span className="text-gray-600">{selectedProject.author}</span></p>
-                                            <p className="text-sm"><span className="font-semibold text-gray-700">Created:</span> <span className="text-gray-600">{new Date(selectedProject.createdAt).toLocaleDateString()}</span></p>
-                                        </div>
+
+                                        {isEditMode ? (
+                                            <div className="space-y-4 mb-6">
+                                                <div>
+                                                    <label className="block text-base font-semibold text-gray-700 mb-2">Title</label>
+                                                    <input
+                                                        type="text"
+                                                        value={editingProject.title}
+                                                        onChange={(e) => handleInputChange('title', e.target.value)}
+                                                        className=" text-sm w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-base font-semibold text-gray-700 mb-2">Category</label>
+                                                    <input
+                                                        type="text"
+                                                        value={editingProject.category}
+                                                        onChange={(e) => handleInputChange('category', e.target.value)}
+                                                        className="text-sm w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-base font-semibold text-gray-700 mb-2">Author</label>
+                                                    <input
+                                                        type="text"
+                                                        value={editingProject.author}
+                                                        onChange={(e) => handleInputChange('author', e.target.value)}
+                                                        className="text-sm w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3 mb-6">
+                                                <p className="text-sm"><span className="font-semibold text-gray-700">Category:</span> <span className="text-purple-600 font-medium">{selectedProject.category}</span></p>
+                                                <p className="text-sm"><span className="font-semibold text-gray-700">Author:</span> <span className="text-gray-600">{selectedProject.author}</span></p>
+                                                <p className="text-sm"><span className="font-semibold text-gray-700">Created:</span> <span className="text-gray-600">{new Date(selectedProject.createdAt).toLocaleDateString()}</span></p>
+                                                {selectedProject.updatedAt && (
+                                                    <p className="text-sm"><span className="font-semibold text-gray-700">Last Updated:</span> <span className="text-gray-600">{new Date(selectedProject.updatedAt).toLocaleDateString()}</span></p>
+                                                )}
+                                            </div>
+                                        )}
 
                                         <h4 className="text-lg font-bold text-gray-800 mb-4 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Description</h4>
-                                        <p className="text-gray-600 text-sm leading-relaxed bg-gray-50 p-4 rounded-2xl">{selectedProject.description}</p>
+                                        {isEditMode ? (
+                                            <textarea
+                                                value={editingProject.description}
+                                                onChange={(e) => handleInputChange('description', e.target.value)}
+                                                rows={4}
+                                                className="text-sm w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                                            />
+                                        ) : (
+                                            <p className="text-gray-600 text-base leading-relaxed bg-gray-50 p-4 rounded-2xl">{selectedProject.description}</p>
+                                        )}
                                     </div>
 
                                     <div>
                                         <h4 className="text-lg font-bold text-gray-800 mb-4 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Materials</h4>
-                                        <ul className="list-disc list-inside space-y-2 mb-8 bg-pink-50 p-4 rounded-2xl">
-                                            {selectedProject.materials.map((material, index) => (
-                                                <li key={index} className="text-gray-600 text-sm">{material}</li>
-                                            ))}
-                                        </ul>
+                                        {isEditMode ? (
+                                            <div className="bg-pink-50 p-4 rounded-2xl mb-8">
+                                                {editingProject.materials.map((material, index) => (
+                                                    <div key={index} className="flex gap-2 mb-2">
+                                                        <input
+                                                            type="text"
+                                                            value={material}
+                                                            onChange={(e) => handleArrayFieldChange('materials', index, e.target.value)}
+                                                            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                                            placeholder="Enter material"
+                                                        />
+                                                        <button
+                                                            onClick={() => removeArrayItem('materials', index)}
+                                                            className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm transition-colors"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    onClick={() => addArrayItem('materials')}
+                                                    className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-purple-500 hover:text-purple-500 transition-colors text-sm"
+                                                >
+                                                    + Add Material
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <ul className="list-disc list-inside space-y-2 mb-8 bg-pink-50 p-4 rounded-2xl">
+                                                {selectedProject.materials.map((material, index) => (
+                                                    <li key={index} className="text-gray-600 text-sm">{material}</li>
+                                                ))}
+                                            </ul>
+                                        )}
 
                                         <h4 className="text-lg font-bold text-gray-800 mb-4 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Steps</h4>
-                                        <ol className="list-decimal list-inside space-y-3 bg-blue-50 p-4 rounded-2xl">
-                                            {selectedProject.steps.map((step, index) => (
-                                                <li key={index} className="text-gray-600 text-sm leading-relaxed">{step}</li>
-                                            ))}
-                                        </ol>
+                                        {isEditMode ? (
+                                            <div className="bg-blue-50 p-4 rounded-2xl">
+                                                {editingProject.steps.map((step, index) => (
+                                                    <div key={index} className="flex gap-2 mb-3">
+                                                        <span className="text-sm font-semibold text-gray-600 mt-2 min-w-[20px]">{index + 1}.</span>
+                                                        <textarea
+                                                            value={step}
+                                                            onChange={(e) => handleArrayFieldChange('steps', index, e.target.value)}
+                                                            rows={2}
+                                                            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm resize-none"
+                                                            placeholder="Enter step description"
+                                                        />
+                                                        <button
+                                                            onClick={() => removeArrayItem('steps', index)}
+                                                            className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm transition-colors self-start"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    onClick={() => addArrayItem('steps')}
+                                                    className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-purple-500 hover:text-purple-500 transition-colors text-sm"
+                                                >
+                                                    + Add Step
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <ol className="list-decimal list-inside space-y-3 bg-blue-50 p-4 rounded-2xl">
+                                                {selectedProject.steps.map((step, index) => (
+                                                    <li key={index} className="text-gray-600 text-sm leading-relaxed">{step}</li>
+                                                ))}
+                                            </ol>
+                                        )}
                                     </div>
                                 </div>
-                            </div>                        </div>
+
+                                {/* Delete button in modal */}
+                                {!isEditMode && (
+                                    <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+                                        <button
+                                            onClick={() => handleDeleteProject(selectedProject.id || selectedProject._id!)}
+                                            className="px-8 py- text-base bg-gradient-to-r from-blue-500 to-purple-500 hover:from-red-600 hover:to-pink-600 text-white rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                        >
+                                            <Trash2 size={14} className="inline mr-1 mb-0.5" />
+                                            Delete
+                                        </button>
+
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

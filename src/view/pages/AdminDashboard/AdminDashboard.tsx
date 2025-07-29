@@ -12,7 +12,7 @@ export const AdminDashboardContent = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-600">Total Users</p>
-                            <p className="text-3xl font-bold text-gray-900">1,234</p>
+                            <p className="text-3xl font-bold text-gray-900">10</p>
                         </div>
                         <div className="bg-blue-100 p-3 rounded-full">
                             <span className="text-2xl">👥</span>
@@ -26,8 +26,8 @@ export const AdminDashboardContent = () => {
                 <div className="bg-white p-6 rounded-xl shadow-sm border">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-gray-600">Total Stories</p>
-                            <p className="text-3xl font-bold text-gray-900">567</p>
+                            <p className="text-sm font-medium text-gray-600">Total Projects</p>
+                            <p className="text-3xl font-bold text-gray-900">52</p>
                         </div>
                         <div className="bg-green-100 p-3 rounded-full">
                             <span className="text-2xl">📖</span>
@@ -40,24 +40,15 @@ export const AdminDashboardContent = () => {
 
                 <div className="bg-white p-6 rounded-xl shadow-sm border">
                     <div>
-                        <p className="text-sm font-medium text-gray-600">Active Sessions</p>
-                        <p className="text-3xl font-bold text-gray-900">89</p>
+                        <p className="text-sm font-medium text-gray-600">Categories</p>
+                        <p className="text-3xl font-bold text-gray-900">4</p>
                     </div>
                     <div className="mt-4">
                         <span className="text-red-600 text-sm font-medium">-3% from last hour</span>
                     </div>
                 </div>
-
-                <div className="bg-white p-6 rounded-xl shadow-sm border">
-                    <div>
-                        <p className="text-sm font-medium text-gray-600">Revenue</p>
-                        <p className="text-3xl font-bold text-gray-900">$12,345</p>
-                    </div>
-                    <div className="mt-4">
-                        <span className="text-green-600 text-sm font-medium">+15% from last month</span>
-                    </div>
-                </div>
             </div>
+
             {/* Recent Activity */}
             <div className="bg-white rounded-xl shadow-sm border p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>

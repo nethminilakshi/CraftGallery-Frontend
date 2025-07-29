@@ -19,7 +19,6 @@ const ViewProjects = () => {
         }
     }, [category, dispatch]);
 
-    // Handle loading state
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -28,7 +27,6 @@ const ViewProjects = () => {
         );
     }
 
-    // Handle error state
     if (error) {
         return (
             <div className="p-4">
@@ -74,7 +72,6 @@ const ViewProjects = () => {
                                     animationDelay: `${index * 0.1}s`,
                                 }}
                             >
-                                {/* Project Image */}
                                 {project.image && (
                                     <div className="relative overflow-hidden rounded-t-3xl">
                                         <img
@@ -90,7 +87,6 @@ const ViewProjects = () => {
                                     </div>
                                 )}
 
-                                {/* Project Content */}
                                 <div className="p-6">
                                     <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2 group-hover:bg-gradient-to-r group-hover:from-pink-500 group-hover:to-purple-500 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
                                         {project.title}
@@ -100,14 +96,12 @@ const ViewProjects = () => {
                                         {project.description}
                                     </p>
 
-                                    {/* Project Meta */}
                                     <div className="flex flex-wrap gap-2 mb-4">
                                 <span className="bg-gradient-to-r from-pink-100 to-purple-100 text-pink-700 text-xs px-3 py-1.5 rounded-full font-medium border border-pink-200/50">
                                     {project.category}
                                 </span>
                                     </div>
 
-                                    {/* Author and Date */}
                                     <div className="text-xs text-gray-500 mb-5 space-y-1 bg-gray-50/50 p-3 rounded-xl">
                                         <p className="flex items-center gap-2">
                                             <span className="w-2 h-2 bg-gradient-to-r from-black-400 to-purple-400 rounded-full"></span>

@@ -9,21 +9,17 @@ import type { AppDispatch } from '../../../store/store';
 import { getUserFromToken } from '../../../Auth/auth.ts';
 import type { UserData } from '../../../model/userData.ts';
 
-// Extended UserData interface to include email and expiration
 interface ExtendedUserData extends UserData {
     email: string;
     exp?: number; // JWT expiration timestamp
 }
 
-// Interface for category data
 interface CategoryData {
     category: string;
 }
 
-// Type for categories array
 type CategoriesArray = (CategoryData | string)[];
 
-// Helper function to check if token is expired
 const isTokenExpired = (exp?: number): boolean => {
     if (!exp) return false;
     const currentTime = Math.floor(Date.now() / 1000);
@@ -34,11 +30,9 @@ const ProjectUploadForm = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
 
-    // Check if user is logged in and get user data
     const [currentUser, setCurrentUser] = useState<ExtendedUserData | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // Get categories from Redux store
     const {
         categories,
         loading: categoriesLoading,
@@ -49,7 +43,6 @@ const ProjectUploadForm = () => {
         error?: string;
     };
 
-    // Get upload state from Redux store - Updated to include email fields
     const {
         loading: uploadLoading,
         error: uploadError,
@@ -73,7 +66,6 @@ const ProjectUploadForm = () => {
     const [testEmailAddress, setTestEmailAddress] = useState('');
     const [showEmailTest, setShowEmailTest] = useState(false);
 
-    // Check authentication and token expiration on component mount
     useEffect(() => {
         const checkAuthentication = () => {
             const token = localStorage.getItem('token');
@@ -156,11 +148,10 @@ const ProjectUploadForm = () => {
         }
     }, [dispatch, categories, categoriesLoading, isAuthenticated]);
 
-    // Handle upload success - Updated to show email confirmation
     useEffect(() => {
         if (uploadSuccess && uploadedProject) {
             setShowSuccessMessage(true);
-            // Reset form
+
             setFormData({
                 title: '',
                 category: '',
@@ -171,7 +162,6 @@ const ProjectUploadForm = () => {
                 author: ''
             });
 
-            // Hide success message after 8 seconds (longer to show email status)
             const timer = setTimeout(() => {
                 setShowSuccessMessage(false);
                 dispatch(clearUploadState());
@@ -261,7 +251,6 @@ const ProjectUploadForm = () => {
             return;
         }
 
-        // Sanitize imageUrl
         const sanitizedImageUrl = formData.imageUrl.trim().replace(/['"]/g, '');
 
         const projectData = {
@@ -283,7 +272,6 @@ const ProjectUploadForm = () => {
         }
     };
 
-    // Test email functionality
     const handleTestEmail = async () => {
         if (!testEmailAddress) {
             alert('Please enter an email address');
@@ -314,7 +302,7 @@ const ProjectUploadForm = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-fuchsia-100 via-purple-100 to-blue-200 p-4">
             <div className="max-w-5xl mx-auto">
-                {/* Enhanced Success Message with Email Status */}
+                {/*  Success Message */}
                 {showSuccessMessage && uploadedProject && (
                     <div className="mb-8 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white p-6 rounded-3xl shadow-2xl animate-bounce">
                         <div className="flex items-center gap-4">
@@ -330,7 +318,7 @@ const ProjectUploadForm = () => {
                                 <p className="text-green-100 text-sm font-medium mb-2">
                                     "{uploadedProject.title}" has been shared with the community!
                                 </p>
-                                {/* Email Status Indicator */}
+                                {/* Email Status  */}
                                 <div className="flex items-center gap-2 text-sm">
                                     <Mail size={16} />
                                     <span className={emailSent ? "text-green-100" : "text-yellow-200"}>
@@ -373,7 +361,6 @@ const ProjectUploadForm = () => {
                 {/* Main Form Container */}
                 <div className="bg-white/90 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/40 overflow-hidden">
 
-                    {/* Header with User Info and Email Test */}
                     <div className="bg-gradient-to-r from-fuchsia-600 via-purple-700 to-blue-600 p-8 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-full">
                             <div className="absolute top-4 left-8 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
@@ -393,7 +380,6 @@ const ProjectUploadForm = () => {
                                 </p>
                             </div>
 
-                            {/* User Info & Email Test */}
                             <div className="flex items-center gap-4">
                                 <div className="text-right">
                                     <div className="flex items-center gap-3 mb-2">
@@ -408,7 +394,6 @@ const ProjectUploadForm = () => {
                                         </p>
                                     )}
 
-                                    {/* Email Test Button (Development) */}
                                     {process.env.NODE_ENV === 'development' && (
                                         <button
                                             onClick={() => setShowEmailTest(!showEmailTest)}
@@ -421,7 +406,7 @@ const ProjectUploadForm = () => {
                             </div>
                         </div>
 
-                        {/* Email Test Section (Development Only) */}
+                        {/* Email Test Section */}
                         {showEmailTest && process.env.NODE_ENV === 'development' && (
                             <div className="mt-6 p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
                                 <h4 className="text-white font-medium mb-2">Test Email Functionality</h4>
@@ -446,7 +431,7 @@ const ProjectUploadForm = () => {
                         )}
                     </div>
 
-                    {/* Form Content - Keep all your existing form fields */}
+                    {/* Form Content */}
                     <div className="p-8 space-y-8" style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
 
                         {/* Project Title */}

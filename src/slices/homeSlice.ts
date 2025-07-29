@@ -1,7 +1,5 @@
 import {createAsyncThunk, createSlice, type PayloadAction} from "@reduxjs/toolkit";
 import {backendApi} from "../api.ts";
-
-// Define Category interface
 interface Category {
     category?: string;
 }
@@ -22,7 +20,6 @@ const initialState: CategoryState = {
     selectedCategory: null
 };
 
-// Async thunk for getting all categories
 export const getAllCategories = createAsyncThunk(
     'categories/getAllCategories',
     async (_, { rejectWithValue }) => {

@@ -68,7 +68,6 @@ const singleProjectSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Fetch project cases
             .addCase(fetchProjectById.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -81,7 +80,6 @@ const singleProjectSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message ?? 'Something went wrong';
             })
-            // Delete project cases
             .addCase(deleteProjectById.pending, (state) => {
                 state.deleteLoading = true;
                 state.deleteError = null;
@@ -98,5 +96,5 @@ const singleProjectSlice = createSlice({
     },
 });
 
-export const { clearDeleteState, resetProjectState } = singleProjectSlice.actions;
+export const { clearDeleteState } = singleProjectSlice.actions;
 export default singleProjectSlice.reducer;

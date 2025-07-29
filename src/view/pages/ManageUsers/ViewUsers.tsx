@@ -23,11 +23,10 @@ import {
 } from "../../../slices/viewUsersSlice.ts";
 
 const ViewUsersPage = () => {
-    // Redux state and dispatch
+
     const dispatch = useDispatch<AppDispatch>();
     const { users, loading, error, selectedUser } = useSelector((state: RootState) => state.manageUsers);
 
-    // Local state for UI
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<'firstName' | 'email' | 'id' | 'role' | 'username'>('firstName');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -35,12 +34,10 @@ const ViewUsersPage = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Load users on component mount
     useEffect(() => {
         dispatch(fetchUsers());
     }, [dispatch]);
 
-    // Filter and sort users
     const filteredAndSortedUsers = users
         .filter(user =>
             user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -73,7 +70,6 @@ const ViewUsersPage = () => {
             return sortOrder === 'asc' ? comparison : -comparison;
         });
 
-    // Handle user actions
     const handleUserView = (user: UserDTO) => {
         dispatch(setSelectedUser(user));
         setShowDetailModal(true);
@@ -84,7 +80,6 @@ const ViewUsersPage = () => {
         setShowDeleteModal(true);
     };
 
-    // Delete user with Redux
     const handleConfirmDelete = async () => {
         if (!selectedUser?.id) return;
 
@@ -100,7 +95,6 @@ const ViewUsersPage = () => {
         }
     };
 
-    // Close modals
     const closeDetailModal = () => {
         setShowDetailModal(false);
         dispatch(clearSelectedUser());
@@ -112,8 +106,6 @@ const ViewUsersPage = () => {
     };
 
 
-
-    // Helper function to get user avatar
     const getUserAvatar = (firstName?: string, lastName?: string) => {
         if (!firstName && !lastName) return '??';
         const first = firstName?.charAt(0) || '';
@@ -121,12 +113,10 @@ const ViewUsersPage = () => {
         return (first + last).toUpperCase() || '??';
     };
 
-    // Helper function to get full name
     const getFullName = (firstName?: string, lastName?: string) => {
         return `${firstName || ''} ${lastName || ''}`.trim() || 'N/A';
     };
 
-    // Helper function to get role color
     const getRoleColor = (role?: string) => {
         switch (role?.toLowerCase()) {
             case 'admin':
@@ -140,7 +130,6 @@ const ViewUsersPage = () => {
         }
     };
 
-    // Helper function to get status color
     const getStatusColor = (status?: string) => {
         switch (status?.toLowerCase()) {
             case 'active':
@@ -162,8 +151,12 @@ const ViewUsersPage = () => {
                 <div className="bg-white border border-[#E9D5FF] rounded-xl shadow-sm p-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div>
-                            <h1 className="text-xl font-semibold text-gray-800">Manage Users</h1>
-                            <p className="text-sm text-gray-600 mt-1">
+                            <h1 className="text-4xl font-bold py-4">
+                        <span className="bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text text-transparent">
+                            Manage
+                        </span>{' '}
+                                <span className="text-purple-700">Users</span>
+                            </h1>                            <p className="text-base text-gray-600 mt-1">
                                 View and manage all system users ({filteredAndSortedUsers.length} found)
                             </p>
                         </div>
@@ -265,10 +258,10 @@ const ViewUsersPage = () => {
                                         User
                                     </th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                        Email & Username
+                                        Email
                                     </th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                        Role & Status
+                                        Role
                                     </th>
                                     <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                         Actions
@@ -301,7 +294,7 @@ const ViewUsersPage = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <User size={14} className="text-gray-400" />
-                                                    <span className="text-sm text-gray-600">@{user.username}</span>
+                                                    {/*<span className="text-sm text-gray-600">@{user.username}</span>*/}
                                                 </div>
                                             </div>
                                         </td>
@@ -383,9 +376,8 @@ const ViewUsersPage = () => {
                         {/* Modal Body */}
                         <div className="p-6">
                             <div className="space-y-6">
-                                {/* User Avatar and ID */}
                                 <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-base">
                                         {getUserAvatar(selectedUser.firstName, selectedUser.lastName)}
                                     </div>
                                     <div>
@@ -395,49 +387,32 @@ const ViewUsersPage = () => {
                                     </div>
                                 </div>
 
-                                {/* User Name */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-base font-semibold text-gray-700 mb-2">
                                         Full Name
                                     </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border">
-                                        <p className="text-gray-900 font-medium text-lg">
+                                    <div className="p-3 bg-gray-80 rounded-lg border">
+                                        <p className="text-gray-600  text-sm">
                                             {getFullName(selectedUser.firstName, selectedUser.lastName)}
                                         </p>
                                     </div>
                                 </div>
 
-                                {/* Username */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Username
-                                    </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border">
-                                        <div className="flex items-center gap-2">
-                                            <User size={16} className="text-gray-400" />
-                                            <p className="text-gray-900 font-mono">
-                                                @{selectedUser.username}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {/* Email */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-base font-semibold text-gray-700 mb-2">
                                         Email Address
                                     </label>
                                     <div className="p-3 bg-gray-50 rounded-lg border">
                                         <div className="flex items-center gap-2">
                                             <Mail size={16} className="text-gray-400" />
-                                            <p className="text-gray-900">
+                                            <p className="text-sm text-gray-900">
                                                 {selectedUser.email}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Role & Status */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -450,20 +425,6 @@ const ViewUsersPage = () => {
                                                 </span>
                                             ) : (
                                                 <span className="text-gray-500">No role assigned</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Status
-                                        </label>
-                                        <div className="p-3 bg-gray-50 rounded-lg border">
-                                            {selectedUser.status ? (
-                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedUser.status)}`}>
-                                                    {selectedUser.status}
-                                                </span>
-                                            ) : (
-                                                <span className="text-gray-500">No status</span>
                                             )}
                                         </div>
                                     </div>

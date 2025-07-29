@@ -1,8 +1,6 @@
-// usersSlice.ts
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import {backendApi} from "../api.ts";
 
-// User DTO interface
 export interface UserDTO {
     id?: number;
     username: string;
@@ -15,7 +13,6 @@ export interface UserDTO {
     updatedAt?: string;
 }
 
-// State interface
 interface UsersState {
     users: UserDTO[];
     loading: boolean;
@@ -23,7 +20,6 @@ interface UsersState {
     selectedUser: UserDTO | null;
 }
 
-// Initial state
 const initialState: UsersState = {
     users: [],
     loading: false,
@@ -31,7 +27,6 @@ const initialState: UsersState = {
     selectedUser: null,
 };
 
-// Async thunks using Axios
 export const fetchUsers = createAsyncThunk(
     'users/fetchUsers',
     async (_, { rejectWithValue }) => {
@@ -60,7 +55,6 @@ export const deleteUser = createAsyncThunk(
     }
 );
 
-// Users slice
 const viewUserSlice = createSlice({
     name: 'users',
     initialState,
@@ -80,7 +74,6 @@ const viewUserSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        // Fetch Users
         builder
             .addCase(fetchUsers.pending, (state) => {
                 state.loading = true;
@@ -95,7 +88,6 @@ const viewUserSlice = createSlice({
                 state.error = action.payload as string;
             });
 
-        // Delete User
         builder
             .addCase(deleteUser.pending, (state) => {
                 state.loading = true;

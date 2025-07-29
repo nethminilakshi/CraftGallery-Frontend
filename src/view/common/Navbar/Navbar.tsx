@@ -9,7 +9,7 @@ export const Navbar = () => {
 
          const storedRole = localStorage.getItem("role");
 
-         setUserRole(storedRole)// "USER"
+         setUserRole(storedRole)
 
 
 

@@ -1,9 +1,7 @@
-// projectUploadSlice.ts
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { AxiosError } from 'axios';
 import {backendApi} from "../api.ts";
 
-// Types
 export interface Project {
     _id?: string;
     id: string;
@@ -18,7 +16,6 @@ export interface Project {
     createdAt: Date | string;
 }
 
-// Updated API response interfaces to match backend
 export interface ApiErrorResponse {
     success?: boolean;
     error: string;
@@ -36,8 +33,8 @@ export interface ProjectUploadState {
     error: string | null;
     success: boolean;
     uploadedProject: Project | null;
-    emailSent: boolean; // New field to track email status
-    successMessage: string | null; // Store the success message from backend
+    emailSent: boolean;
+    successMessage: string | null;
 }
 
 const initialState: ProjectUploadState = {
@@ -49,7 +46,6 @@ const initialState: ProjectUploadState = {
     successMessage: null,
 };
 
-// Helper function to extract error message
 const getErrorMessage = (error: unknown): string => {
     if (error instanceof AxiosError) {
         const apiError = error.response?.data as ApiErrorResponse;
@@ -67,16 +63,14 @@ const getErrorMessage = (error: unknown): string => {
     return 'An unknown error occurred';
 };
 
-// Upload Project Async Thunk
 export const uploadProject = createAsyncThunk<
     ApiSuccessResponse<Project>,
-    Omit<Project, '_id' | 'createdAt' | 'id'>, // Backend auto-generates id and createdAt
+    Omit<Project, '_id' | 'createdAt' | 'id'>,
     { rejectValue: string }
 >(
     'projectUpload/uploadProject',
     async (projectData, { rejectWithValue }) => {
         try {
-            // Send only the required data, let backend handle id and createdAt generation
             const response = await backendApi.post<ApiSuccessResponse<Project>>('/project/save', {
                 title: projectData.title,
                 category: projectData.category,
@@ -95,7 +89,6 @@ export const uploadProject = createAsyncThunk<
     }
 );
 
-// Update Project Async Thunk (if you need it)
 export const updateProject = createAsyncThunk<
     ApiSuccessResponse<Project>,
     { id: string; updateData: Partial<Project> },
@@ -112,7 +105,6 @@ export const updateProject = createAsyncThunk<
     }
 );
 
-// Test Email Async Thunk (for development)
 export const testEmail = createAsyncThunk<
     { success: boolean; message: string },
     string,
@@ -129,7 +121,6 @@ export const testEmail = createAsyncThunk<
     }
 );
 
-// Slice
 const projectUploadSlice = createSlice({
     name: 'projectUpload',
     initialState,
@@ -155,7 +146,6 @@ const projectUploadSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        // Upload Project
         builder
             .addCase(uploadProject.pending, (state) => {
                 state.loading = true;
@@ -169,7 +159,6 @@ const projectUploadSlice = createSlice({
                 state.success = true;
                 state.uploadedProject = action.payload.project;
                 state.successMessage = action.payload.message;
-                // Check if message mentions email to set emailSent flag
                 state.emailSent = action.payload.message.toLowerCase().includes('email');
             })
             .addCase(uploadProject.rejected, (state, action) => {
@@ -212,5 +201,5 @@ const projectUploadSlice = createSlice({
     },
 });
 
-export const { clearUploadState, clearError, resetSuccess, setEmailSent } = projectUploadSlice.actions;
+export const { clearUploadState, clearError } = projectUploadSlice.actions;
 export default projectUploadSlice.reducer;

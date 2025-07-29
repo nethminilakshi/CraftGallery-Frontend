@@ -24,7 +24,7 @@ import {
 import type { RootState, AppDispatch } from '../../../store/store';
 
 const ViewCategoriesPage = () => {
-    // Redux state and dispatch
+
     const dispatch = useDispatch<AppDispatch>();
     const {
         categories,
@@ -34,7 +34,6 @@ const ViewCategoriesPage = () => {
         isSubmitting
     } = useSelector((state: RootState) => state.adminCategories);
 
-    // Local state for UI
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<'name' | 'id'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -44,12 +43,10 @@ const ViewCategoriesPage = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [formData, setFormData] = useState<CategoryDto>({ category: '', description: '' });
 
-    // Load categories on component mount
     useEffect(() => {
         dispatch(fetchCategories());
     }, [dispatch]);
 
-    // Filter and sort categories
     const filteredAndSortedCategories = categories
         .filter(category =>
             category.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -70,7 +67,6 @@ const ViewCategoriesPage = () => {
             return sortOrder === 'asc' ? comparison : -comparison;
         });
 
-    // Handle category actions
     const handleCategoryView = (category: CategoryDto) => {
         dispatch(setSelectedCategory(category));
         setShowDetailModal(true);
@@ -92,7 +88,6 @@ const ViewCategoriesPage = () => {
         setShowDeleteModal(true);
     };
 
-    // Redux action handlers
     const handleAddSubmit = async () => {
         if (!formData.category.trim() || !formData.description.trim()) {
             return;
@@ -143,7 +138,6 @@ const ViewCategoriesPage = () => {
         }
     };
 
-    // Close modals
     const closeDetailModal = () => {
         setShowDetailModal(false);
         dispatch(clearSelectedCategory());
@@ -175,8 +169,13 @@ const ViewCategoriesPage = () => {
                 <div className="bg-white border border-[#E9D5FF] rounded-xl shadow-sm p-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div>
-                            <h1 className="text-xl font-semibold text-gray-800">Manage Categories</h1>
-                            <p className="text-sm text-gray-600 mt-1">
+                            <h1 className="text-4xl font-bold py-4">
+                        <span className="bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text text-transparent">
+                            Manage
+                        </span>{' '}
+                                <span className="text-purple-700">Categories</span>
+                            </h1>
+                            <p className="text-base text-gray-600 mt-1">
                                 View and manage all project categories ({filteredAndSortedCategories.length} found)
                             </p>
                         </div>
@@ -398,7 +397,6 @@ const ViewCategoriesPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Category Name */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Category Name
@@ -410,7 +408,6 @@ const ViewCategoriesPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Description */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Description
@@ -530,9 +527,9 @@ const ViewCategoriesPage = () => {
                         {/* Modal Body */}
                         <div className="p-6">
                             <div className="space-y-4">
-                                {/* Category ID */}
+
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-base font-semibold text-gray-700 mb-2">
                                         Category ID
                                     </label>
                                     <div className="p-2 bg-gray-100 rounded-lg">
@@ -540,9 +537,9 @@ const ViewCategoriesPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Category Name */}
+
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-base font-semibold text-gray-700 mb-2">
                                         Category Name *
                                     </label>
                                     <input
@@ -550,14 +547,13 @@ const ViewCategoriesPage = () => {
                                         value={formData.category}
                                         onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                                         placeholder="Enter category name"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         disabled={isSubmitting}
                                     />
                                 </div>
 
-                                {/* Description */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-base font-semibold text-gray-700 mb-2">
                                         Description *
                                     </label>
                                     <textarea
@@ -565,7 +561,7 @@ const ViewCategoriesPage = () => {
                                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                         placeholder="Enter category description"
                                         rows={4}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                        className="text-sm w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                         disabled={isSubmitting}
                                     />
                                 </div>
@@ -584,7 +580,7 @@ const ViewCategoriesPage = () => {
                             <button
                                 onClick={handleUpdateSubmit}
                                 disabled={isSubmitting || !formData.category.trim() || !formData.description.trim()}
-                                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 {isSubmitting && (
                                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>

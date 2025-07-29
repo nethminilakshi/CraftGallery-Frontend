@@ -1,4 +1,3 @@
-// userRegisterSlice.ts
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { AxiosError } from 'axios';
 import { backendApi } from '../api.ts';
@@ -27,7 +26,6 @@ const initialState: UserRegisterState = {
     registeredUser: null,
 };
 
-// Helper function to get error message
 const getErrorMessage = (error: unknown): string => {
     if (error instanceof AxiosError) {
         const data = error.response?.data as { message?: string; error?: string };
@@ -36,7 +34,6 @@ const getErrorMessage = (error: unknown): string => {
     return (error as Error).message || 'An unknown error occurred';
 };
 
-// Async thunk to register user
 export const registerUser = createAsyncThunk<
     UserDto,
     Omit<UserDto, 'id'>,
@@ -50,13 +47,11 @@ export const registerUser = createAsyncThunk<
             const response = await backendApi.post('/user/save', userData);
             console.log('API Response:', response.data);
 
-            // Handle different response formats
             if (response.data.success && response.data.user) {
                 return response.data.user;
             } else if (response.data.user) {
                 return response.data.user;
             } else if (response.data.id) {
-                // If response directly contains user data
                 return response.data as UserDto;
             } else {
                 console.error('Unexpected response format:', response.data);
@@ -75,7 +70,6 @@ export const registerUser = createAsyncThunk<
     }
 );
 
-// Slice
 const userRegisterSlice = createSlice({
     name: 'userRegister',
     initialState,

@@ -13,7 +13,7 @@ const SingleProjectPage = () => {
 
     useEffect(() => {
         const storedRole = localStorage.getItem("role");
-        setUserRole(storedRole); // "USER" or "ADMIN"
+        setUserRole(storedRole);
     }, []);
 
     const { id } = useParams<{ id: string }>();
@@ -34,13 +34,10 @@ const SingleProjectPage = () => {
         }
     }, [id, dispatch]);
 
-    // Handle successful deletion
     useEffect(() => {
         if (isDeleted) {
-            // Clear delete state
             dispatch(clearDeleteState());
-            // Navigate to projects list or home page
-            navigate('/projects'); // Update this path according to your routing
+            navigate('/projects');
         }
     }, [isDeleted, dispatch, navigate]);
 
@@ -91,14 +88,12 @@ const SingleProjectPage = () => {
                 </div>
             </div>
 
-            {/* Image Section */}
             {project.imageUrl && (
-                <div className="mb-8">
+                <div className="pb-8 flex justify-center w-full max-w-2xl">
                     <img
                         src={project.imageUrl}
                         alt={project.title}
-                        className="w-full max-w-2xl h-64 object-cover rounded-xl shadow-md mx-auto"
-                    />
+                        className="w-80 h-80 object-cover rounded-3xl shadow-xl"                    />
                 </div>
             )}
 
@@ -107,8 +102,8 @@ const SingleProjectPage = () => {
                 {/* Description */}
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
-                        <p className="text-sm text-gray-700 leading-relaxed">{project.description}</p>
+                        <h3 className="text-xl font-bold text-gray-800 mb-4 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Description</h3>
+                        <p className="text-base text-gray-700 leading-relaxed">{project.description}</p>
                     </div>
                 </div>
 
@@ -116,8 +111,8 @@ const SingleProjectPage = () => {
                 {/* Materials */}
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Materials Needed</h3>
-                        <ul className="bg-gray-50 p-4 rounded-lg list-disc list-inside space-y-1 text-sm text-gray-700">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Materials Needed</h3>
+                        <ul className="bg-gray-50 p-4 rounded-lg list-disc list-inside space-y-1 text-base text-gray-700">
                             {Array.isArray(project.materials) ? (
                                 project.materials.map((item: string, index: number) => (
                                     <li key={index}>{item}</li>
@@ -138,8 +133,8 @@ const SingleProjectPage = () => {
             {/* Instructions Section */}
 
             <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Step-by-Step Instructions</h3>
-                <ul className="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Step-by-Step Instructions</h3>
+                <ul className="list-decimal list-inside text-base text-gray-700 space-y-1">
                     {Array.isArray(project.steps) ? (
                         project.steps.map((step: string, index: number) => (
                             <li key={index}>{step}</li>
@@ -175,7 +170,6 @@ const SingleProjectPage = () => {
                 )}
             </div>
 
-            {/* Delete error display */}
             {deleteError && (
                 <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
                     <strong>Error:</strong> {deleteError}

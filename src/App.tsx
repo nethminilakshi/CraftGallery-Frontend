@@ -6,17 +6,6 @@ import {BrowserRouter, Route, Routes,} from "react-router-dom";
 import {AdminDefaultLayout} from "./view/common/DefaultLayout/AdminDefaultLayout.tsx";
 function App() {
 
-    // const navigate = useNavigate()
-    //
-    // useEffect(() =>{
-    //     const token = localStorage.getItem('token');
-    //     if(!token || isTokenExpired(token)){
-    //         localStorage.removeItem('token')
-    //         localStorage.removeItem(('refreshToken'))
-    //         navigate('/login');
-    //     }
-    // })
-
     return(
 <BrowserRouter>
             <Routes>
