@@ -7,7 +7,7 @@ interface UserDto {
     firstName: string;
     lastName: string;
     password?: string;
-    role: 'ADMIN' ;
+    role: 'USER' ;
 }
 
 const UserRegisterForm = () => {
@@ -119,7 +119,7 @@ const UserRegisterForm = () => {
                 firstName: formData.firstName.trim(),
                 lastName: formData.lastName.trim(),
                 password: formData.password,
-                role: 'ADMIN'
+                role: 'USER'
             };
 
             const result = await registerUser(userData);

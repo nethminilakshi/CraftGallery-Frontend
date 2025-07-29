@@ -1,7 +1,8 @@
 import './MainContent.css';
 import {Navigate, Route, Routes} from "react-router-dom";
 import {AdminDashboardContent} from "../../pages/AdminDashboard/AdminDashboard.tsx";
-import ViewCategories from "../../pages/AdminSideCategory/ViewCategories.tsx";
+import ViewCategories from "../../pages/ManageCategories/ViewCategories.tsx";
+import ViewUsers from "../../pages/ManageUsers/ViewUsers.tsx";
 
 
 export function AdminMainContent() {
@@ -10,7 +11,8 @@ export function AdminMainContent() {
             <Routes>
                 <Route index element={<Navigate to ="/admin/mainContent" replace/>}/>
                 <Route path="/mainContent" element={<AdminDashboardContent/>}/>
-                <Route path="/admin/categories" element={<ViewCategories/>}/>
+                <Route path="categories" element={<ViewCategories/>}/>
+                <Route path="users" element={<ViewUsers/>}/>
             </Routes>
         </div>
     );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Plus, X, CheckCircle, AlertCircle } from 'lucide-react';
+import {Upload, Plus, X, CheckCircle, AlertCircle, Sparkles, Heart} from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../../slices/rootReducer';
@@ -289,64 +289,44 @@ const ProjectUploadForm = () => {
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('username');
-        localStorage.removeItem('role');
-        alert('Successfully logged out!');
-        navigate('/login');
-    };
+    // const handleLogout = () => {
+    //     localStorage.removeItem('token');
+    //     localStorage.removeItem('refreshToken');
+    //     localStorage.removeItem('username');
+    //     localStorage.removeItem('role');
+    //     alert('Successfully logged out!');
+    //     navigate('/login');
+    // };
 
     // Don't render the form if user is not authenticated
     if (!isAuthenticated || !currentUser) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                <div className="bg-white/70 backdrop-blur-sm shadow-2xl rounded-3xl border border-white/20 p-8 text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Checking authentication...</p>
+            <div className="min-h-screen bg-gradient-to-br from-fuchsia-50 via-purple-50 to-blue-100 flex items-center justify-center p-4">
+                <div className="bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-white/30 p-8 text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
+                    <p className="text-gray-700 font-medium">Checking authentication...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 p-4">
-            <div className="max-w-2xl mx-auto">
-                {/* User Info and Logout */}
-                <div className="mb-6 bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-white/20 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-sm">
-                                {currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U'}
-                            </span>
-                        </div>
-                        <div>
-                            <p className="font-semibold text-gray-800">Welcome, {currentUser.username || 'User'}!</p>
-                            <p className="text-sm text-gray-600">{currentUser.email}</p>
-                            {currentUser.exp && (
-                                <p className="text-xs text-gray-500">
-                                    Session expires: {new Date(currentUser.exp * 1000).toLocaleString()}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                    <button
-                        onClick={handleLogout}
-                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
-                    >
-                        Logout
-                    </button>
-                </div>
-
+        <div className="min-h-screen bg-gradient-to-br from-fuchsia-100 via-purple-100 to-blue-200 p-4">
+            <div className="max-w-5xl mx-auto">
                 {/* Success Message */}
                 {showSuccessMessage && uploadedProject && (
-                    <div className="mb-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-2xl shadow-lg animate-pulse">
-                        <div className="flex items-center gap-3">
-                            <CheckCircle size={24} />
+                    <div className="mb-8 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white p-6 rounded-3xl shadow-2xl animate-bounce">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-white/20 p-2 rounded-full">
+                                <CheckCircle size={28} />
+                            </div>
                             <div>
-                                <h3 className="font-bold text-lg">🎉 Project Created Successfully!</h3>
-                                <p className="text-green-100 text-sm">
+                                <h3 className="font-bold text-xl flex items-center gap-2">
+                                    <Sparkles size={20} />
+                                    Project Created Successfully!
+                                    <Heart size={20} className="text-pink-200" />
+                                </h3>
+                                <p className="text-green-100 text-sm font-medium">
                                     "{uploadedProject.title}" has been shared with the community!
                                 </p>
                             </div>
@@ -356,67 +336,111 @@ const ProjectUploadForm = () => {
 
                 {/* Error Message */}
                 {uploadError && (
-                    <div className="mb-6 bg-red-500 text-white p-4 rounded-2xl shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <AlertCircle size={24} />
-                            <div>
-                                <h3 className="font-bold">Upload Failed</h3>
-                                <p className="text-red-100 text-sm">{uploadError}</p>
+                    <div className="mb-8 bg-gradient-to-r from-red-500 to-pink-500 text-white p-6 rounded-3xl shadow-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-white/20 p-2 rounded-full">
+                                    <AlertCircle size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg">Upload Failed</h3>
+                                    <p className="text-red-100 text-sm">{uploadError}</p>
+                                </div>
                             </div>
+                            <button
+                                onClick={() => dispatch(clearError())}
+                                className="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-all duration-200"
+                            >
+                                <X size={20} />
+                            </button>
                         </div>
-                        <button
-                            onClick={() => dispatch(clearError())}
-                            className="mt-2 text-red-100 hover:text-white underline text-sm"
-                        >
-                            Dismiss
-                        </button>
                     </div>
                 )}
 
-                <div className="bg-white/70 backdrop-blur-sm shadow-2xl rounded-3xl border border-white/20 overflow-hidden">
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 p-6">
-                        <h2 className="text-2xl font-bold text-white text-center tracking-wide">
-                            ✨ Create New Project ✨
-                        </h2>
-                        <p className="text-purple-100 text-center text-sm mt-1 font-light">
-                            Share your amazing ideas with the world
-                        </p>
+                {/* Main Form Container */}
+                <div className="bg-white/90 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/40 overflow-hidden">
+
+                    {/* Header with User Info and Logout */}
+                    <div className="bg-gradient-to-r from-fuchsia-600 via-purple-700 to-blue-600 p-8 relative overflow-hidden">
+                        {/* Decorative Elements */}
+                        <div className="absolute top-0 left-0 w-full h-full">
+                            <div className="absolute top-4 left-8 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
+                            <div className="absolute top-12 right-12 w-16 h-16 bg-fuchsia-300/20 rounded-full animate-bounce"></div>
+                            <div className="absolute bottom-4 left-1/3 w-12 h-12 bg-purple-300/20 rounded-full animate-pulse"></div>
+                        </div>
+
+                        <div className="relative z-10 flex justify-between items-center">
+                            <div>
+                                <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                                    <Sparkles className="text-yellow-300" size={32} />
+                                    Create New Project
+                                    <Heart className="text-pink-300" size={28} />
+                                </h1>
+                                <p className="text-purple-100 text-lg font-medium">
+                                    Share your amazing ideas with the world
+                                </p>
+                            </div>
+
+                            {/* User Info & Logout */}
+                            <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        {/*<div className="w-12 h-12 bg-gradient-to-r from-pink-400 to-fuchsia-500 rounded-full flex items-center justify-center shadow-lg">*/}
+                                        {/*    <span className="text-white font-bold text-lg">*/}
+                                        {/*        {currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U'}*/}
+                                        {/*    </span>*/}
+                                        {/*</div>*/}
+                                        <div>
+                                            <p className="font-bold text-white text-lg">Welcome, {currentUser.username || 'Creator'}!</p>
+                                            <p className="text-purple-200 text-sm">{currentUser.email}</p>
+                                        </div>
+                                    </div>
+                                    {currentUser.exp && (
+                                        <p className="text-xs text-purple-300">
+                                            Session expires: {new Date(currentUser.exp * 1000).toLocaleString()}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Form Content */}
-                    <div className="p-6 space-y-5"
-                         style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
+                    <div className="p-8 space-y-8" style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
 
+                        {/* Project Title */}
                         <div className="group">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                📝 Project Title
-                                <span className="text-red-500">*</span>
+                            <label className="block text-lg font-bold text-gray-800 mb-3 flex items-center gap-3">
+                                <span className="text-2xl"></span>
+                                Project Title
+                                <span className="text-red-500 text-xl">*</span>
                             </label>
                             <input
                                 name="title"
                                 value={formData.title}
                                 onChange={handleInputChange}
-                                className="w-full p-3 text-xs bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:bg-white transition-all duration-300 hover:border-gray-300"
-                                placeholder="What's your amazing project called?"
+                                className="w-full p-4 text-base bg-gradient-to-r from-white to-purple-50 border-3 border-purple-200 rounded-2xl focus:border-fuchsia-400 focus:shadow-lg focus:shadow-fuchsia-200/50 transition-all duration-300 hover:border-purple-300 hover:shadow-md"
+                                placeholder="What's your amazing project called? "
                                 disabled={uploadLoading}
                                 required
                             />
                         </div>
 
+                        {/* Category */}
                         <div className="group">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                🏷️ Category
-                                <span className="text-red-500">*</span>
+                            <label className="block text-lg font-bold text-gray-800 mb-3 flex items-center gap-3">
+                                <span className="text-2xl"></span>
+                                Category
+                                <span className="text-red-500 text-xl">*</span>
                                 {categoriesLoading && (
-                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-fuchsia-600"></div>
                                 )}
                             </label>
                             <select
                                 name="category"
                                 value={formData.category}
                                 onChange={handleInputChange}
-                                className="w-full p-3 text-xs bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:bg-white transition-all duration-300 hover:border-gray-300"
+                                className="w-full p-4 text-base bg-gradient-to-r from-white to-blue-50 border-3 border-blue-200 rounded-2xl focus:border-purple-400 focus:shadow-lg focus:shadow-purple-200/50 transition-all duration-300 hover:border-blue-300 hover:shadow-md"
                                 disabled={categoriesLoading || uploadLoading}
                                 required
                             >
@@ -425,7 +449,7 @@ const ProjectUploadForm = () => {
                                         ? 'Loading categories...'
                                         : categoriesError
                                             ? 'Error loading categories'
-                                            : 'Choose your category...'
+                                            : 'Choose your category... '
                                     }
                                 </option>
                                 {!categoriesLoading && !categoriesError && categories && categories.map((categoryObj: CategoryData | string, index: number) => (
@@ -435,156 +459,174 @@ const ProjectUploadForm = () => {
                                 ))}
                             </select>
                             {categoriesError && (
-                                <p className="text-xs text-red-500 mt-1">
+                                <p className="text-sm text-red-500 mt-2">
                                     Failed to load categories. Please refresh the page.
                                 </p>
                             )}
                         </div>
 
+                        {/* Author */}
                         <div className="group">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                👤 Author
-                                <span className="text-red-500">*</span>
+                            <label className="block text-lg font-bold text-gray-800 mb-3 flex items-center gap-3">
+                                <span className="text-2xl"></span>
+                                Author
+                                <span className="text-red-500 text-xl">*</span>
                             </label>
                             <input
                                 name="author"
                                 value={formData.author}
                                 onChange={handleInputChange}
-                                className="w-full p-3 text-xs bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:bg-white transition-all duration-300 hover:border-gray-300"
-                                placeholder="Who's the creative genius behind this?"
+                                className="w-full p-4 text-base bg-gradient-to-r from-white to-fuchsia-50 border-3 border-fuchsia-200 rounded-2xl focus:border-purple-400 focus:shadow-lg focus:shadow-purple-200/50 transition-all duration-300 hover:border-fuchsia-300 hover:shadow-md"
+                                placeholder="Who's the creative genius behind this? "
                                 disabled={uploadLoading}
                                 required
                             />
                         </div>
 
+                        {/* Description */}
                         <div className="group">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                📄 Description
-                                <span className="text-red-500">*</span>
+                            <label className="block text-lg font-bold text-gray-800 mb-3 flex items-center gap-3">
+                                <span className="text-2xl"></span>
+                                Description
+                                <span className="text-red-500 text-xl">*</span>
                             </label>
                             <textarea
                                 name="description"
                                 value={formData.description}
                                 onChange={handleInputChange}
-                                className="w-full p-3 text-xs bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:bg-white transition-all duration-300 hover:border-gray-300 resize-none"
-                                rows={3}
-                                placeholder="Tell us what makes your project special..."
+                                className="w-full p-4 text-base bg-gradient-to-r from-white to-purple-50 border-3 border-purple-200 rounded-2xl focus:border-fuchsia-400 focus:shadow-lg focus:shadow-fuchsia-200/50 transition-all duration-300 hover:border-purple-300 hover:shadow-md resize-none"
+                                rows={4}
+                                placeholder="Tell us what makes your project special... "
                                 disabled={uploadLoading}
                                 required
                             />
                         </div>
 
+                        {/* Image URL */}
                         <div className="group">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                🖼️ Image URL
+                            <label className="block text-lg font-bold text-gray-800 mb-3 flex items-center gap-3">
+                                <span className="text-2xl"></span>
+                                Image URL
                             </label>
                             <input
                                 name="imageUrl"
                                 value={formData.imageUrl}
                                 onChange={handleInputChange}
-                                className="w-full p-3 text-xs bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:bg-white transition-all duration-300 hover:border-gray-300"
-                                placeholder="https://your-awesome-image.jpg"
+                                className="w-full p-4 text-base bg-gradient-to-r from-white to-blue-50 border-3 border-blue-200 rounded-2xl focus:border-purple-400 focus:shadow-lg focus:shadow-purple-200/50 transition-all duration-300 hover:border-blue-300 hover:shadow-md"
+                                placeholder="https://your-awesome-image.jpg "
                                 disabled={uploadLoading}
                             />
                         </div>
 
-                        <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-2xl border border-orange-200">
-                            <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                🛠️ Materials Needed
-                                <span className="text-red-500">*</span>
+                        {/* Materials Section */}
+                        <div className="bg-gradient-to-br from-orange-50 via-pink-50 to-rose-50 p-6 rounded-3xl border-3 border-orange-200 shadow-lg">
+                            <label className="block text-lg font-bold text-gray-800 mb-4 flex items-center gap-3">
+                                <span className="text-2xl"></span>
+                                Materials Needed
+                                <span className="text-red-500 text-xl">*</span>
                             </label>
                             {formData.materials.map((material: string, index: number) => (
-                                <div key={index} className="flex gap-2 mb-2">
+                                <div key={index} className="flex gap-3 mb-3">
                                     <input
                                         value={material}
                                         onChange={(e) => updateArray(index, e.target.value, 'materials')}
-                                        className="flex-1 p-2 text-xs bg-white border-2 border-orange-200 rounded-lg focus:border-orange-400 transition-all duration-200"
-                                        placeholder={`Material ${index + 1} (e.g., Wood, Paint, Screws...)`}
+                                        className="flex-1 p-3 text-base bg-white border-2 border-orange-300 rounded-xl focus:border-pink-400 focus:shadow-lg focus:shadow-pink-200/30 transition-all duration-200"
+                                        placeholder={`Material ${index + 1} (e.g., Wood, Paint, Screws...) 🔨`}
                                         disabled={uploadLoading}
                                     />
                                     {formData.materials.length > 1 && (
                                         <button
                                             onClick={() => removeItem(index, 'materials')}
-                                            className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition-colors duration-200"
+                                            className="p-3 text-red-500 hover:bg-red-100 rounded-xl transition-all duration-200 border-2 border-red-200 hover:border-red-300"
                                             disabled={uploadLoading}
                                         >
-                                            <X size={16} />
+                                            <X size={18} />
                                         </button>
                                     )}
                                 </div>
                             ))}
                             <button
                                 onClick={() => addItem('materials')}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:bg-orange-100 rounded-lg transition-colors duration-200 font-medium disabled:opacity-50"
+                                className="flex items-center gap-2 px-6 py-3 text-base text-orange-600 bg-white hover:bg-orange-50 rounded-xl transition-all duration-200 font-bold border-2 border-orange-200 hover:border-orange-300 shadow-md hover:shadow-lg disabled:opacity-50"
                                 disabled={uploadLoading}
                             >
-                                <Plus size={16} /> Add Another Material
+                                <Plus size={18} /> Add Another Material
                             </button>
                         </div>
 
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-2xl border border-green-200">
-                            <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                📋 Step-by-Step Instructions
-                                <span className="text-red-500">*</span>
+                        {/* Steps Section */}
+                        <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-6 rounded-3xl border-3 border-green-200 shadow-lg">
+                            <label className="block text-lg font-bold text-gray-800 mb-4 flex items-center gap-3">
+                                <span className="text-2xl"></span>
+                                Step-by-Step Instructions
+                                <span className="text-red-500 text-xl">*</span>
                             </label>
                             {formData.steps.map((step: string, index: number) => (
-                                <div key={index} className="flex gap-2 mb-3">
-                                    <span className="mt-2 px-2 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs rounded-full min-w-[24px] text-center font-bold shadow-sm">
+                                <div key={index} className="flex gap-3 mb-4">
+                                    <div className="mt-2 px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm rounded-full min-w-[36px] text-center font-bold shadow-lg">
                                         {index + 1}
-                                    </span>
+                                    </div>
                                     <textarea
                                         value={step}
                                         onChange={(e) => updateArray(index, e.target.value, 'steps')}
-                                        className="flex-1 p-2 text-xs bg-white border-2 border-green-200 rounded-lg focus:border-green-400 transition-all duration-200 resize-none"
-                                        rows={2}
-                                        placeholder={`Step ${index + 1}: Describe what to do...`}
+                                        className="flex-1 p-3 text-base bg-white border-2 border-green-300 rounded-xl focus:border-emerald-400 focus:shadow-lg focus:shadow-emerald-200/30 transition-all duration-200 resize-none"
+                                        rows={3}
+                                        placeholder={`Step ${index + 1}: Describe what to do... `}
                                         disabled={uploadLoading}
                                     />
                                     {formData.steps.length > 1 && (
                                         <button
                                             onClick={() => removeItem(index, 'steps')}
-                                            className="mt-2 p-2 text-red-500 hover:bg-red-100 rounded-lg transition-colors duration-200"
+                                            className="mt-2 p-3 text-red-500 hover:bg-red-100 rounded-xl transition-all duration-200 border-2 border-red-200 hover:border-red-300"
                                             disabled={uploadLoading}
                                         >
-                                            <X size={16} />
+                                            <X size={18} />
                                         </button>
                                     )}
                                 </div>
                             ))}
                             <button
                                 onClick={() => addItem('steps')}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-green-600 hover:bg-green-100 rounded-lg transition-colors duration-200 font-medium disabled:opacity-50"
+                                className="flex items-center gap-2 px-6 py-3 text-base text-green-600 bg-white hover:bg-green-50 rounded-xl transition-all duration-200 font-bold border-2 border-green-200 hover:border-green-300 shadow-md hover:shadow-lg disabled:opacity-50"
                                 disabled={uploadLoading}
                             >
-                                <Plus size={16} /> Add Another Step
+                                <Plus size={18} /> Add Another Step
                             </button>
                         </div>
 
-                        <div className="pt-4">
+                        {/* Submit Button */}
+                        <div className="pt-6 flex flex-col items-center">
                             <button
                                 type="button"
                                 onClick={handleSubmit}
                                 disabled={uploadLoading || categoriesLoading}
-                                className="w-full bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 hover:from-purple-700 hover:via-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:via-gray-400 disabled:to-gray-400 text-white font-semibold py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+                                className="w-[250px] bg-gradient-to-r from-fuchsia-600 via-purple-700 to-blue-600 hover:from-fuchsia-700 hover:via-purple-800 hover:to-blue-700 disabled:from-gray-400 disabled:via-gray-500 disabled:to-gray-600 text-white font-bold py-4 rounded-3xl transition-all duration-300 flex items-center justify-center gap-4 text-lg shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 disabled:transform-none border border-white/20"
                             >
                                 {uploadLoading ? (
                                     <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                                         <span>Creating magic... ✨</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Upload size={18} />
-                                        <span>🚀 Launch Your Project!</span>
+                                        <Upload size={20} />
+                                        <span>Launch Your Project!</span>
                                     </>
                                 )}
                             </button>
+
+                            {/*<button*/}
+                            {/*    onClick={handleLogout}*/}
+                            {/*    className="flex items-center gap-2 mt-4 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-2xl font-medium transition-all duration-300 border border-white/30 hover:border-white/50 shadow-lg hover:shadow-xl transform hover:scale-105"*/}
+                            {/*>*/}
+                            {/*    <LogOut size={18} />*/}
+                            {/*    Logout*/}
+                            {/*</button>*/}
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+        </div>    );
 };
 
 export default ProjectUploadForm;

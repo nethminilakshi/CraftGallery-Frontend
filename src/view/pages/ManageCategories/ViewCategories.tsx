@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
     Search,
     Eye,
@@ -10,54 +11,43 @@ import {
     Edit,
     Trash2
 } from 'lucide-react';
-
-// Category DTO interface
-interface CategoryDto {
-    id?: string;
-    category: string;
-    description: string;
-}
+import {
+    fetchCategories,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    clearError,
+    setSelectedCategory,
+    clearSelectedCategory,
+    type CategoryDto
+} from '../../../slices/viewCategorySlice';
+import type { RootState, AppDispatch } from '../../../store/store';
 
 const ViewCategoriesPage = () => {
-    // State management
-    const [categories, setCategories] = useState<CategoryDto[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    // Redux state and dispatch
+    const dispatch = useDispatch<AppDispatch>();
+    const {
+        categories,
+        loading,
+        error,
+        selectedCategory,
+        isSubmitting
+    } = useSelector((state: RootState) => state.adminCategories);
+
+    // Local state for UI
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<'name' | 'id'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-    const [selectedCategory, setSelectedCategory] = useState<CategoryDto | null>(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [formData, setFormData] = useState<CategoryDto>({ category: '', description: '' });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    // API Functions
-    const fetchCategories = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await fetch('/api/category/all');
-            if (!response.ok) {
-                throw new Error('Failed to fetch categories');
-            }
-            const data = await response.json();
-            setCategories(data);
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-            setError(errorMessage);
-            console.error('Error fetching categories:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Load categories on component mount
     useEffect(() => {
-        fetchCategories();
-    }, []);
+        dispatch(fetchCategories());
+    }, [dispatch]);
 
     // Filter and sort categories
     const filteredAndSortedCategories = categories
@@ -82,7 +72,7 @@ const ViewCategoriesPage = () => {
 
     // Handle category actions
     const handleCategoryView = (category: CategoryDto) => {
-        setSelectedCategory(category);
+        dispatch(setSelectedCategory(category));
         setShowDetailModal(true);
     };
 
@@ -92,151 +82,89 @@ const ViewCategoriesPage = () => {
     };
 
     const handleUpdateCategory = (category: CategoryDto) => {
-        setSelectedCategory(category);
+        dispatch(setSelectedCategory(category));
         setFormData({ category: category.category, description: category.description });
         setShowUpdateModal(true);
     };
 
     const handleDeleteCategory = (category: CategoryDto) => {
-        setSelectedCategory(category);
+        dispatch(setSelectedCategory(category));
         setShowDeleteModal(true);
     };
 
-    // API CRUD Operations
-    const addCategory = async () => {
+    // Redux action handlers
+    const handleAddSubmit = async () => {
         if (!formData.category.trim() || !formData.description.trim()) {
-            setError('Please fill in all fields');
             return;
         }
 
-        setIsSubmitting(true);
-        setError(null);
         try {
-            const response = await fetch('/api/category/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    category: formData.category.trim(),
-                    description: formData.description.trim()
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to add category');
-            }
-
-            const newCategory = await response.json();
-            setCategories(prev => [...prev, newCategory]);
+            await dispatch(addCategory({
+                category: formData.category.trim(),
+                description: formData.description.trim()
+            })).unwrap();
             setShowAddModal(false);
             setFormData({ category: '', description: '' });
-
-            // Show success message (you can implement a toast notification here)
-            console.log('Category added successfully');
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to add category';
-            setError(errorMessage);
-            console.error('Error adding category:', err);
-        } finally {
-            setIsSubmitting(false);
+        } catch (error) {
+            console.error('Error adding category:', error);
         }
     };
 
-    const updateCategory = async () => {
+    const handleUpdateSubmit = async () => {
         if (!selectedCategory?.id || !formData.category.trim() || !formData.description.trim()) {
-            setError('Please fill in all fields');
             return;
         }
 
-        setIsSubmitting(true);
-        setError(null);
         try {
-            const response = await fetch(`/api/category/update/${selectedCategory.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+            await dispatch(updateCategory({
+                id: selectedCategory.id,
+                categoryData: {
                     category: formData.category.trim(),
                     description: formData.description.trim()
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update category');
-            }
-
-            const updatedCategory = await response.json();
-            setCategories(prev =>
-                prev.map(cat => cat.id === selectedCategory.id ? updatedCategory : cat)
-            );
+                }
+            })).unwrap();
             setShowUpdateModal(false);
-            setSelectedCategory(null);
+            dispatch(clearSelectedCategory());
             setFormData({ category: '', description: '' });
-
-            // Show success message
-            console.log('Category updated successfully');
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to update category';
-            setError(errorMessage);
-            console.error('Error updating category:', err);
-        } finally {
-            setIsSubmitting(false);
+        } catch (error) {
+            console.error('Error updating category:', error);
         }
     };
 
-    const deleteCategory = async () => {
+    const handleConfirmDelete = async () => {
         if (!selectedCategory?.id) return;
 
-        setIsSubmitting(true);
-        setError(null);
         try {
-            const response = await fetch(`/api/category/delete/${selectedCategory.id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete category');
-            }
-
-            setCategories(prev => prev.filter(cat => cat.id !== selectedCategory.id));
+            await dispatch(deleteCategory(selectedCategory.id)).unwrap();
             setShowDeleteModal(false);
-            setSelectedCategory(null);
-
-            // Show success message
-            console.log('Category deleted successfully');
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to delete category';
-            setError(errorMessage);
-            console.error('Error deleting category:', err);
-        } finally {
-            setIsSubmitting(false);
+            dispatch(clearSelectedCategory());
+        } catch (error) {
+            console.error('Error deleting category:', error);
         }
     };
 
     // Close modals
     const closeDetailModal = () => {
         setShowDetailModal(false);
-        setSelectedCategory(null);
+        dispatch(clearSelectedCategory());
     };
 
     const closeAddModal = () => {
         setShowAddModal(false);
         setFormData({ category: '', description: '' });
-        setError(null);
+        dispatch(clearError());
     };
 
     const closeUpdateModal = () => {
         setShowUpdateModal(false);
-        setSelectedCategory(null);
+        dispatch(clearSelectedCategory());
         setFormData({ category: '', description: '' });
-        setError(null);
+        dispatch(clearError());
     };
 
     const closeDeleteModal = () => {
         setShowDeleteModal(false);
-        setSelectedCategory(null);
+        dispatch(clearSelectedCategory());
     };
 
     return (
@@ -244,11 +172,11 @@ const ViewCategoriesPage = () => {
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Header Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <div className="bg-white border border-[#E9D5FF] rounded-xl shadow-sm p-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Manage Categories</h1>
-                            <p className="text-gray-600 mt-2">
+                            <h1 className="text-xl font-semibold text-gray-800">Manage Categories</h1>
+                            <p className="text-sm text-gray-600 mt-1">
                                 View and manage all project categories ({filteredAndSortedCategories.length} found)
                             </p>
                         </div>
@@ -277,7 +205,7 @@ const ViewCategoriesPage = () => {
                                 placeholder="Search categories by name or description..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-3 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                                className="pl-10 pr-4 py-3 w-full border border-[#E9D5FF] rounded-lg focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent bg-white text-sm placeholder:text-sm"
                             />
                         </div>
 
@@ -288,7 +216,7 @@ const ViewCategoriesPage = () => {
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value as 'name' | 'id')}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
+                                    className="px-3 py-2 border border-[#E9D5FF] rounded-lg focus:ring-2 focus:ring-[#8B5CF6] bg-white text-sm"
                                 >
                                     <option value="name">Sort by Name</option>
                                     <option value="id">Sort by ID</option>
@@ -314,7 +242,7 @@ const ViewCategoriesPage = () => {
                             <span className="font-medium">Error: {error}</span>
                         </div>
                         <button
-                            onClick={() => setError(null)}
+                            onClick={() => dispatch(clearError())}
                             className="text-red-700 hover:text-red-900 p-1 rounded-full hover:bg-red-100 transition-colors"
                         >
                             <X size={16} />
@@ -514,23 +442,23 @@ const ViewCategoriesPage = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
                         {/* Modal Header */}
-                        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                            <h3 className="text-xl font-bold text-gray-900">Add New Category</h3>
+                        <div className="flex justify-between items-center p-5 border-b border-gray-200">
+                            <h3 className="text-lg font-bold text-gray-900">Add New Category</h3>
                             <button
                                 onClick={closeAddModal}
                                 disabled={isSubmitting}
                                 className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
                             >
-                                <X size={20} />
+                                <X size={18} />
                             </button>
                         </div>
 
                         {/* Modal Body */}
-                        <div className="p-6">
+                        <div className="p-5">
                             <div className="space-y-4">
                                 {/* Category Name */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Category Name *
                                     </label>
                                     <input
@@ -538,14 +466,14 @@ const ViewCategoriesPage = () => {
                                         value={formData.category}
                                         onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                                         placeholder="Enter category name"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                         disabled={isSubmitting}
                                     />
                                 </div>
 
                                 {/* Description */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Description *
                                     </label>
                                     <textarea
@@ -553,7 +481,7 @@ const ViewCategoriesPage = () => {
                                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                         placeholder="Enter category description"
                                         rows={4}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                                         disabled={isSubmitting}
                                     />
                                 </div>
@@ -561,7 +489,7 @@ const ViewCategoriesPage = () => {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+                        <div className="flex justify-end gap-3 p-5 border-t border-gray-200 bg-gray-50">
                             <button
                                 onClick={closeAddModal}
                                 disabled={isSubmitting}
@@ -570,9 +498,9 @@ const ViewCategoriesPage = () => {
                                 Cancel
                             </button>
                             <button
-                                onClick={addCategory}
+                                onClick={handleAddSubmit}
                                 disabled={isSubmitting || !formData.category.trim() || !formData.description.trim()}
-                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-lg hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md hover:shadow-lg"
                             >
                                 {isSubmitting && (
                                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -581,8 +509,7 @@ const ViewCategoriesPage = () => {
                             </button>
                         </div>
                     </div>
-                </div>
-            )}
+                </div>            )}
 
             {/* Update Category Modal */}
             {showUpdateModal && selectedCategory && (
@@ -655,7 +582,7 @@ const ViewCategoriesPage = () => {
                                 Cancel
                             </button>
                             <button
-                                onClick={updateCategory}
+                                onClick={handleUpdateSubmit}
                                 disabled={isSubmitting || !formData.category.trim() || !formData.description.trim()}
                                 className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
@@ -725,7 +652,7 @@ const ViewCategoriesPage = () => {
                                 Cancel
                             </button>
                             <button
-                                onClick={deleteCategory}
+                                onClick={handleConfirmDelete}
                                 disabled={isSubmitting}
                                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >

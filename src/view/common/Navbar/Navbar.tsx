@@ -53,7 +53,7 @@ export const Navbar = () => {
                         </a>
 
                         { userRole === "ADMIN" ? (
-                            <a href="/admin/mainCOntent"
+                            <a href="/admin/mainContent"
                                className="block px-3 py-2 text-gray-700 hover:text-purple-600 font-medium">Go To
                                 Dashboard</a>
                         ) : (

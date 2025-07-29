@@ -6,6 +6,8 @@ import singleProjectReducer from "./singleProjectSlice.ts";
 import projectUploadSlice from "./projectUploadSlice.ts";
 import userRegisterSlice from "./userRegisterSlice.ts";
 import viewCategorySlice from "./viewCategorySlice.ts";
+import viewUsersSlice from "./viewUsersSlice.ts";
+
 
 export const rootReducer = combineReducers({
 
@@ -14,8 +16,8 @@ export const rootReducer = combineReducers({
     singleProject: singleProjectReducer,
     projectUpload: projectUploadSlice,
     userRegister: userRegisterSlice,
-    adminCategories: viewCategorySlice
-
+    adminCategories: viewCategorySlice,
+    manageUsers: viewUsersSlice
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
