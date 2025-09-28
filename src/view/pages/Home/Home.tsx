@@ -1,43 +1,34 @@
-import {
-    Camera, Heart, PaintBucket,
-    Palette, Scissors, Search, Sparkles, Star,
-    Upload, Users,
-} from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
-import type {RootState} from "../../../slices/rootReducer.ts";
-import {closeDropdown, getAllCategories, selectCategory, toggleDropdown} from "../../../slices/homeSlice.ts";
-import type {AppDispatch} from "../../../store/store.ts";
-import {useNavigate} from "react-router-dom";
+import { Camera, Heart, PaintBucket, Palette, Scissors, Search, Sparkles, Star, Upload, Users } from "lucide-react"
+import { useDispatch, useSelector } from "react-redux"
+import type { RootState } from "../../../slices/rootReducer.ts"
+import { closeDropdown, getAllCategories, selectCategory, toggleDropdown } from "../../../slices/homeSlice.ts"
+import type { AppDispatch } from "../../../store/store.ts"
+import { useNavigate } from "react-router-dom"
 
 export function Home() {
-
-    const navigate = useNavigate();
-    const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate()
+    const dispatch = useDispatch<AppDispatch>()
 
     // Get state from Redux store
-    const {
-        categories,
-        loading,
-        error,
-        isDropdownOpen,
-        selectedCategory
-    } = useSelector((state: RootState) => state.categories);
+    const { categories, loading, error, isDropdownOpen, selectedCategory } = useSelector(
+        (state: RootState) => state.categories,
+    )
 
     // Handle dropdown toggle
     const handleToggleDropdown = () => {
-        dispatch(toggleDropdown());
+        dispatch(toggleDropdown())
         // Fetch categories if dropdown is opening and categories are empty
         if (!isDropdownOpen && categories.length === 0) {
-            dispatch(getAllCategories());
+            dispatch(getAllCategories())
         }
-    };
+    }
 
     // Handle category selection
     const handleSelectCategory = (category: { category?: string }) => {
-        dispatch(selectCategory(category));
-        dispatch(closeDropdown());
-        navigate(`/category/${category.category}`);
-    };
+        dispatch(selectCategory(category))
+        dispatch(closeDropdown())
+        navigate(`/category/${category.category}`)
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
@@ -47,16 +38,17 @@ export function Home() {
                     {/* Left Content */}
                     <div className="text-center lg:text-left">
                         <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
-                            <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                Create, Share &
-                            </span>
+              <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                Create, Share &amp;
+              </span>
                             <br />
                             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                Get Inspired
-                            </span>
+                Get Inspired
+              </span>
                         </h1>
                         <p className="text-xl md:text-2xl text-gray-600 mb-10 leading-relaxed">
-                            Discover thousands of creative DIY craft ideas and art projects. Share your masterpieces and inspire a community of makers!
+                            Discover thousands of creative DIY craft ideas and art projects. Share your masterpieces and inspire a
+                            community of makers!
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
@@ -73,7 +65,7 @@ export function Home() {
                                 >
                                     <span>Explore Projects</span>
                                     <svg
-                                        className={`ml-2 h-4 w-4 transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                                        className={`ml-2 h-4 w-4 transform transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -88,34 +80,41 @@ export function Home() {
                                         {loading && (
                                             <div className="px-4 py-3 text-gray-500 text-sm flex items-center">
                                                 <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    <circle
+                                                        className="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        strokeWidth="4"
+                                                    ></circle>
+                                                    <path
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                    ></path>
                                                 </svg>
                                                 Loading categories...
                                             </div>
                                         )}
 
-                                        {error && (
-                                            <div className="px-4 py-3 text-red-500 text-sm">
-                                                Error: {error}
-                                            </div>
-                                        )}
+                                        {error && <div className="px-4 py-3 text-red-500 text-sm">Error: {error}</div>}
 
                                         {!loading && !error && categories.length === 0 && (
-                                            <div className="px-4 py-3 text-gray-500 text-sm">
-                                                No categories found
-                                            </div>
+                                            <div className="px-4 py-3 text-gray-500 text-sm">No categories found</div>
                                         )}
 
-                                        {!loading && categories.length > 0 && categories.map((category, index) => (
-                                            <button
-                                                key={index}
-                                                onClick={() => handleSelectCategory(category)}
-                                                className="w-full text-left px-4 py-3 hover:bg-purple-50 hover:text-purple-600 transition duration-200 text-sm border-b border-gray-100 last:border-b-0"
-                                            >
-                                                {category.category || 'Unknown Category'}
-                                            </button>
-                                        ))}
+                                        {!loading &&
+                                            categories.length > 0 &&
+                                            categories.map((category, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => handleSelectCategory(category)}
+                                                    className="w-full text-left px-4 py-3 hover:bg-purple-50 hover:text-purple-600 transition duration-200 text-sm border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    {category.category || "Unknown Category"}
+                                                </button>
+                                            ))}
                                     </div>
                                 )}
                             </div>
@@ -172,23 +171,26 @@ export function Home() {
                         <div className="absolute -top-4 -right-4 bg-yellow-400 rounded-full p-3 shadow-lg animate-bounce">
                             <Camera className="w-5 h-5 text-white" />
                         </div>
-                        <div className="absolute -bottom-4 -left-4 bg-green-400 rounded-full p-3 shadow-lg animate-bounce" style={{ animationDelay: '1s' }}>
+                        <div
+                            className="absolute -bottom-4 -left-4 bg-green-400 rounded-full p-3 shadow-lg animate-bounce"
+                            style={{ animationDelay: "1s" }}
+                        >
                             <Palette className="w-5 h-5 text-white" />
                         </div>
                     </div>
                 </div>
                 {/* Floating Craft Icons */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-20 left-10 text-pink-300 animate-bounce" style={{ animationDelay: '0s' }}>
+                    <div className="absolute top-20 left-10 text-pink-300 animate-bounce" style={{ animationDelay: "0s" }}>
                         <Scissors className="w-8 h-8" />
                     </div>
-                    <div className="absolute top-32 right-20 text-purple-300 animate-bounce" style={{ animationDelay: '1s' }}>
+                    <div className="absolute top-32 right-20 text-purple-300 animate-bounce" style={{ animationDelay: "1s" }}>
                         <PaintBucket className="w-10 h-10" />
                     </div>
-                    <div className="absolute top-60 left-1/4 text-blue-300 animate-bounce" style={{ animationDelay: '2s' }}>
+                    <div className="absolute top-60 left-1/4 text-blue-300 animate-bounce" style={{ animationDelay: "2s" }}>
                         <Heart className="w-6 h-6" />
                     </div>
-                    <div className="absolute top-40 right-1/3 text-pink-300 animate-bounce" style={{ animationDelay: '3s' }}>
+                    <div className="absolute top-40 right-1/3 text-pink-300 animate-bounce" style={{ animationDelay: "3s" }}>
                         <Sparkles className="w-7 h-7" />
                     </div>
                 </div>
@@ -196,137 +198,211 @@ export function Home() {
 
             {/* Featured Projects Section */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                <h2 className="text-4xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Featured Projects
-                </h2>
-                <p className="text-xl text-gray-600 text-center mb-16 max-w-2xl mx-auto">
-                    Get inspired by amazing creations from our community
-                </p>
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        Featured Projects
+                    </h2>
+                    <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                        Discover exceptional creations from our talented community of artists and crafters
+                    </p>
+                </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {/* Project 1 */}
-                    <div className="group">
-                        <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-3 transition-all duration-300 border border-white/40 h-full">
-                            <div className="w-full h-48 bg-gradient-to-br from-pink-200 to-purple-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden">
-                                <div className="text-center">
-                                    <Scissors className="w-16 h-16 text-purple-600 mb-2 mx-auto" />
-                                    <p className="text-sm font-medium text-purple-700">Paper Butterfly Art</p>
+                    {/* Project 1 - Share Creations */}
+                    <div className="group cursor-pointer">
+                        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100 h-full">
+                            <div className="w-full h-56 bg-gradient-to-br from-pink-100 to-purple-100 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-pink-200/50 to-purple-200/50"></div>
+                                <div className="relative text-center z-10">
+                                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 mb-3 mx-auto w-fit">
+                                        <Upload className="w-8 h-8 text-purple-600" />
+                                    </div>
+                                    <p className="text-xs font-semibold text-purple-700">Share Your Art</p>
                                 </div>
                             </div>
-                            <div className="text-purple-600 mb-4">
-                                <Upload className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3 text-gray-800">
-                                Share Your Creations
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors">
+                                Upload & Showcase
                             </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                Upload your handmade treasures and show the world your creative magic! From paper crafts to paintings.
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                Share your handcrafted masterpieces with our vibrant community. From intricate paper art to stunning
+                                paintings, showcase your creativity.
                             </p>
+                            <div className="flex items-center text-purple-600 font-medium text-sm">
+                                <span>Get Started</span>
+                                <svg
+                                    className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Project 2 */}
-                    <div className="group">
-                        <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-3 transition-all duration-300 border border-white/40 h-full">
-                            <div className="w-full h-48 bg-gradient-to-br from-blue-200 to-green-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden">
-                                <div className="text-center">
-                                    <PaintBucket className="w-16 h-16 text-blue-600 mb-2 mx-auto" />
-                                    <p className="text-sm font-medium text-blue-700">Watercolor Magic</p>
+                    {/* Project 2 - Explore Ideas */}
+                    <div className="group cursor-pointer">
+                        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100 h-full">
+                            <div className="w-full h-56 bg-gradient-to-br from-blue-100 to-green-100 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-200/50 to-green-200/50"></div>
+                                <div className="relative text-center z-10">
+                                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 mb-3 mx-auto w-fit">
+                                        <Search className="w-8 h-8 text-blue-600" />
+                                    </div>
+                                    <p className="text-xs font-semibold text-blue-700">Discover Projects</p>
                                 </div>
                             </div>
-                            <div className="text-blue-600 mb-4">
-                                <Search className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3 text-gray-800">
-                                Explore Ideas
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 group-hover:text-blue-600 transition-colors">
+                                Explore & Learn
                             </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                Dive into thousands of amazing projects! Find tutorials, techniques, and creative inspiration for every skill level.
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                Browse thousands of inspiring projects with detailed tutorials and step-by-step guides for creators of
+                                all skill levels.
                             </p>
+                            <div className="flex items-center text-blue-600 font-medium text-sm">
+                                <span>Start Exploring</span>
+                                <svg
+                                    className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Project 3 */}
-                    <div className="group">
-                        <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-3 transition-all duration-300 border border-white/40 h-full">
-                            <div className="w-full h-48 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden">
-                                <div className="text-center">
-                                    <Heart className="w-16 h-16 text-orange-600 mb-2 mx-auto" />
-                                    <p className="text-sm font-medium text-orange-700">DIY Gifts</p>
+                    {/* Project 3 - Community */}
+                    <div className="group cursor-pointer">
+                        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100 h-full">
+                            <div className="w-full h-56 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-orange-200/50 to-pink-200/50"></div>
+                                <div className="relative text-center z-10">
+                                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 mb-3 mx-auto w-fit">
+                                        <Users className="w-8 h-8 text-orange-600" />
+                                    </div>
+                                    <p className="text-xs font-semibold text-orange-700">Join Community</p>
                                 </div>
                             </div>
-                            <div className="text-orange-600 mb-4">
-                                <Users className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3 text-gray-800">
-                                Join Community
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 group-hover:text-orange-600 transition-colors">
+                                Connect & Collaborate
                             </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                Meet amazing artists and crafters! Share tips, get feedback, and celebrate creativity together.
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                Join a supportive community of artists and crafters. Share techniques, get feedback, and celebrate
+                                creativity together.
                             </p>
+                            <div className="flex items-center text-orange-600 font-medium text-sm">
+                                <span>Join Now</span>
+                                <svg
+                                    className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Project 4 */}
-                    <div className="group">
-                        <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-3 transition-all duration-300 border border-white/40 h-full">
-                            <div className="w-full h-48 bg-gradient-to-br from-purple-200 to-pink-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden">
-                                <div className="text-center">
-                                    <Sparkles className="w-16 h-16 text-purple-600 mb-2 mx-auto" />
-                                    <p className="text-sm font-medium text-purple-700">Holiday Decorations</p>
+                    {/* Project 4 - Reviews */}
+                    <div className="group cursor-pointer">
+                        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100 h-full">
+                            <div className="w-full h-56 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-200/50 to-indigo-200/50"></div>
+                                <div className="relative text-center z-10">
+                                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 mb-3 mx-auto w-fit">
+                                        <Star className="w-8 h-8 text-purple-600" />
+                                    </div>
+                                    <p className="text-xs font-semibold text-purple-700">Rate & Review</p>
                                 </div>
                             </div>
-                            <div className="text-purple-600 mb-4">
-                                <Star className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3 text-gray-800">
-                                Rate & Review
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors">
+                                Rate & Appreciate
                             </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                Give stars and loving comments to incredible artwork! Help others discover amazing projects.
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                Show appreciation for outstanding artwork with ratings and thoughtful reviews. Help others discover
+                                exceptional projects.
                             </p>
+                            <div className="flex items-center text-purple-600 font-medium text-sm">
+                                <span>Start Rating</span>
+                                <svg
+                                    className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Project 5 */}
-                    <div className="group">
-                        <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-3 transition-all duration-300 border border-white/40 h-full">
-                            <div className="w-full h-48 bg-gradient-to-br from-green-200 to-blue-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden">
-                                <div className="text-center">
-                                    <Camera className="w-16 h-16 text-green-600 mb-2 mx-auto" />
-                                    <p className="text-sm font-medium text-green-700">Nature Crafts</p>
+                    {/* Project 5 - Favorites */}
+                    <div className="group cursor-pointer">
+                        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100 h-full">
+                            <div className="w-full h-56 bg-gradient-to-br from-green-100 to-teal-100 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-green-200/50 to-teal-200/50"></div>
+                                <div className="relative text-center z-10">
+                                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 mb-3 mx-auto w-fit">
+                                        <Heart className="w-8 h-8 text-green-600" />
+                                    </div>
+                                    <p className="text-xs font-semibold text-green-700">Save Favorites</p>
                                 </div>
                             </div>
-                            <div className="text-green-600 mb-4">
-                                <Heart className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3 text-gray-800">
-                                Save Favorites
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 group-hover:text-green-600 transition-colors">
+                                Curate & Save
                             </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                Bookmark amazing projects you want to try! Build your personal inspiration collection easily.
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                Build your personal collection of inspiring projects. Bookmark tutorials and ideas for your future
+                                creative endeavors.
                             </p>
+                            <div className="flex items-center text-green-600 font-medium text-sm">
+                                <span>Save Projects</span>
+                                <svg
+                                    className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Project 6 */}
-                    <div className="group">
-                        <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-3 transition-all duration-300 border border-white/40 h-full">
-                            <div className="w-full h-48 bg-gradient-to-br from-red-200 to-pink-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden">
-                                <div className="text-center">
-                                    <Palette className="w-16 h-16 text-red-600 mb-2 mx-auto" />
-                                    <p className="text-sm font-medium text-red-700">Abstract Art</p>
+                    {/* Project 6 - For Everyone */}
+                    <div className="group cursor-pointer">
+                        <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100 h-full">
+                            <div className="w-full h-56 bg-gradient-to-br from-rose-100 to-pink-100 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-rose-200/50 to-pink-200/50"></div>
+                                <div className="relative text-center z-10">
+                                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 mb-3 mx-auto w-fit">
+                                        <Sparkles className="w-8 h-8 text-rose-600" />
+                                    </div>
+                                    <p className="text-xs font-semibold text-rose-700">All Skill Levels</p>
                                 </div>
                             </div>
-                            <div className="text-red-600 mb-4">
-                                <Sparkles className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3 text-gray-800">
-                                For Everyone
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 group-hover:text-rose-600 transition-colors">
+                                For Every Creator
                             </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                Perfect for all skill levels! From beginner tutorials to advanced techniques for every creative soul.
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                Whether you're a beginner or expert, find projects tailored to your skill level with comprehensive
+                                guides and tips.
                             </p>
+                            <div className="flex items-center text-rose-600 font-medium text-sm">
+                                <span>Find Your Level</span>
+                                <svg
+                                    className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -335,9 +411,7 @@ export function Home() {
             {/* Call to Action Section */}
             <section className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 text-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                        Ready to Start Your Creative Journey?
-                    </h2>
+                    <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Start Your Creative Journey?</h2>
                     <p className="text-xl mb-10 opacity-90 max-w-2xl mx-auto">
                         Join our community of makers and discover unlimited inspiration for your next craft project!
                     </p>
@@ -348,5 +422,5 @@ export function Home() {
                 </div>
             </section>
         </div>
-    );
+    )
 }
