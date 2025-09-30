@@ -18,6 +18,7 @@ Built with **React**, **TypeScript**, and **Express.js**, this platform provides
 <img width="1347" height="637" alt="User Screenshot 4" src="https://github.com/user-attachments/assets/1e2ce765-7d76-4765-b921-bb126bd77582" />  
 <img width="1352" height="639" alt="User Screenshot 5" src="https://github.com/user-attachments/assets/438bda6c-704a-42ea-8f4c-6318c6654c38" />  
 
+### 🎯 Artist Side 
 ---
 
 ## ✨ Key Features  
