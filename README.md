@@ -7,19 +7,24 @@ Built with **React**, **TypeScript**, and **Express.js**, this platform provides
 
 ## 📸 Screenshots  
 
-### 🛡️ Admin Side  
+### 🛡️ Admin Side :
 <img width="1349" height="637" alt="Admin Screenshot 1" src="https://github.com/user-attachments/assets/1b3ba446-5311-4f9f-ac3f-2a060711a289" />  
 <img width="1347" height="642" alt="Admin Screenshot 2" src="https://github.com/user-attachments/assets/5d870cad-e207-4ea9-8bb7-3dda6a88ba73" />  
 
-### 👥 User Side  
-<img width="1351" height="636" alt="User Screenshot 1" src="https://github.com/user-attachments/assets/944e9ea4-a873-4728-bf7b-c0d6899347c7" />  
-<img width="1350" height="637" alt="User Screenshot 2" src="https://github.com/user-attachments/assets/bc693320-2631-4e1a-b8ad-22513cf7098b" />  
-<img width="1351" height="637" alt="User Screenshot 3" src="https://github.com/user-attachments/assets/ad16b19a-452f-42f4-ba78-3d21d953733c" />  
-<img width="1347" height="637" alt="User Screenshot 4" src="https://github.com/user-attachments/assets/1e2ce765-7d76-4765-b921-bb126bd77582" />  
-<img width="1352" height="639" alt="User Screenshot 5" src="https://github.com/user-attachments/assets/438bda6c-704a-42ea-8f4c-6318c6654c38" />  
+### 👥 User Side : 
+<img width="1350" height="637" alt="User Screenshot 1" src="https://github.com/user-attachments/assets/bc693320-2631-4e1a-b8ad-22513cf7098b" />  
 
-### 🎯 Artist Side 
+
+### 🎯 Artist Side :
+<img width="1351" height="636" alt="Artist Screenshot 1" src="https://github.com/user-attachments/assets/944e9ea4-a873-4728-bf7b-c0d6899347c7" /> 
+<img width="1351" height="637" alt="Artist Screenshot 2" src="https://github.com/user-attachments/assets/7ac28cff-91b1-4810-be5d-e70dc5f890d2" />
+<img width="1148" height="637" alt="Artist Screenshot 3" src="https://github.com/user-attachments/assets/f031bdd6-f1e0-4f89-8df6-224794792bce" />
+<img width="1351" height="637" alt="Artist Screenshot 4" src="https://github.com/user-attachments/assets/ad16b19a-452f-42f4-ba78-3d21d953733c" />  
+<img width="1347" height="637" alt="Artist Screenshot 5" src="https://github.com/user-attachments/assets/1e2ce765-7d76-4765-b921-bb126bd77582" />  
+<img width="1352" height="639" alt="Artist Screenshot 6" src="https://github.com/user-attachments/assets/438bda6c-704a-42ea-8f4c-6318c6654c38" />  
+
 ---
+
 
 ## ✨ Key Features  
 
