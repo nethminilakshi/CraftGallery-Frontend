@@ -17,7 +17,6 @@ export function Home() {
     // Handle dropdown toggle
     const handleToggleDropdown = () => {
         dispatch(toggleDropdown())
-        // Fetch categories if dropdown is opening and categories are empty
         if (!isDropdownOpen && categories.length === 0) {
             dispatch(getAllCategories())
         }
