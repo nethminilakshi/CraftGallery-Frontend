@@ -16,7 +16,7 @@ Built with **React**, **TypeScript**, and **Express.js**, this platform provides
 
 
 ### 🎯 Artist Side :
-<img width="1351" height="636" alt="Artist Screenshot 1" src="https://github.com/user-attachments/assets/944e9ea4-a873-4728-bf7b-c0d6899347c7" /> 
+<img width="1351" height="638" alt="Artist Screenshot 1" src="https://github.com/user-attachments/assets/184f8d27-9150-47ce-8172-f4c07ec98099" />
 <img width="1351" height="637" alt="Artist Screenshot 2" src="https://github.com/user-attachments/assets/7ac28cff-91b1-4810-be5d-e70dc5f890d2" />
 <img width="1148" height="637" alt="Artist Screenshot 3" src="https://github.com/user-attachments/assets/f031bdd6-f1e0-4f89-8df6-224794792bce" />
 <img width="1351" height="637" alt="Artist Screenshot 4" src="https://github.com/user-attachments/assets/ad16b19a-452f-42f4-ba78-3d21d953733c" />  
