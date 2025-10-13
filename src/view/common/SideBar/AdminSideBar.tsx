@@ -6,13 +6,12 @@ export default function AdminSidebar() {
 
     const navItems = [
         { path: '/admin/mainContent', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-        { path: '/admin/projects', label: 'Projects', icon: <Image className="w-5 h-5" /> },
         { path: '/admin/categories', label: 'Categories', icon: <Shapes className="w-5 h-5" /> },
         { path: '/admin/users', label: 'Users', icon: <Users className="w-5 h-5" /> },
     ];
 
     return (
-        <nav className="h-full flex flex-col p-6 bg-gray-100 shadow-md rounded-r-2xl border-r border-gray-100">
+        <nav className="h-full flex flex-col p-6 bg-[#D9E9CF] shadow-md rounded-r-2xl border-r border-gray-100">
             {/* Header */}
             <div className="mb-8">
                 <h2 className="text-3xl font-extrabold bg-gradient-to-r from-blue-800 via-purple-500 to-purple-600 bg-clip-text text-transparent">

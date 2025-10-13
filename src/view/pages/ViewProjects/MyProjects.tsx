@@ -1,6 +1,20 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Trash2, Calendar, User, Tag, ArrowLeft, RefreshCw, LogOut, Edit, Save, X } from 'lucide-react';
+import {
+    Eye,
+    Trash2,
+    Calendar,
+    User,
+    Tag,
+    ArrowLeft,
+    RefreshCw,
+    LogOut,
+    Edit,
+    Save,
+    X,
+    Scissors,
+    PaintBucket, Palette, Sparkles
+} from 'lucide-react';
 import { getUserFromToken, isTokenExpired } from '../../../Auth/auth.ts';
 import type { UserData } from '../../../model/userData.ts';
 import { backendApi } from '../../../api.ts';
@@ -9,6 +23,7 @@ interface ExtendedUserData extends UserData {
     email: string;
     exp?: number;
     iat?: number;
+    loginTime?: number;
 }
 
 interface Project {
@@ -31,9 +46,7 @@ const SESSION_DURATION_MS = SESSION_DURATION_HOURS * 60 * 60 * 1000;
 
 const isSessionExpired = (loginTime?: number): boolean => {
     if (!loginTime) return false;
-    const currentTime = Date.now();
-    const sessionDuration = currentTime - loginTime;
-    return sessionDuration >= SESSION_DURATION_MS;
+    return Date.now() - loginTime >= SESSION_DURATION_MS;
 };
 
 const MyProjects = () => {
@@ -45,18 +58,14 @@ const MyProjects = () => {
     const [error, setError] = useState<string | null>(null);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [showModal, setShowModal] = useState(false);
-
     const [isEditMode, setIsEditMode] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [updating, setUpdating] = useState(false);
 
     useEffect(() => {
-
         const checkAuthentication = () => {
             const token = localStorage.getItem('token');
             const loginTime = localStorage.getItem('loginTime');
-
-
 
             if (!token) {
                 alert('Please log in to view your projects');
@@ -65,12 +74,7 @@ const MyProjects = () => {
             }
 
             if (loginTime && isSessionExpired(parseInt(loginTime))) {
-                console.log('Session expired - clearing localStorage');
-                localStorage.removeItem('token');
-                localStorage.removeItem('refreshToken');
-                localStorage.removeItem('username');
-                localStorage.removeItem('role');
-                localStorage.removeItem('loginTime');
+                ['token', 'refreshToken', 'username', 'role', 'loginTime'].forEach(key => localStorage.removeItem(key));
                 alert(`Your session has expired after ${SESSION_DURATION_HOURS} hours. Please log in again.`);
                 navigate('/login');
                 return;
@@ -80,40 +84,22 @@ const MyProjects = () => {
                 const userData = getUserFromToken(token) as ExtendedUserData;
 
                 if (isTokenExpired(token)) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('refreshToken');
-                    localStorage.removeItem('username');
-                    localStorage.removeItem('role');
-                    localStorage.removeItem('loginTime');
+                    ['token', 'refreshToken', 'username', 'role', 'loginTime'].forEach(key => localStorage.removeItem(key));
                     alert('Your session token has expired. Please log in again.');
                     navigate('/login');
                     return;
                 }
 
-                if (userData && userData.email) {
-                    const userWithLoginTime = {
-                        ...userData,
-                        loginTime: loginTime ? parseInt(loginTime) : Date.now()
-                    };
-                    setCurrentUser(userWithLoginTime);
+                if (userData?.email) {
+                    setCurrentUser({ ...userData, loginTime: loginTime ? parseInt(loginTime) : Date.now() });
                     setIsAuthenticated(true);
                 } else {
-                    console.log('Invalid user data - no email found');
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('refreshToken');
-                    localStorage.removeItem('username');
-                    localStorage.removeItem('role');
-                    localStorage.removeItem('loginTime');
+                    ['token', 'refreshToken', 'username', 'role', 'loginTime'].forEach(key => localStorage.removeItem(key));
                     alert('Your session has expired. Please log in again.');
                     navigate('/login');
                 }
-            } catch (error) {
-                console.error('Error parsing token or user data:', error);
-                localStorage.removeItem('token');
-                localStorage.removeItem('refreshToken');
-                localStorage.removeItem('username');
-                localStorage.removeItem('role');
-                localStorage.removeItem('loginTime');
+            } catch {
+                ['token', 'refreshToken', 'username', 'role', 'loginTime'].forEach(key => localStorage.removeItem(key));
                 alert('Invalid session. Please log in again.');
                 navigate('/login');
             }
@@ -122,42 +108,25 @@ const MyProjects = () => {
         checkAuthentication();
     }, [navigate]);
 
-    // Fetch user's projects
     useEffect(() => {
         const fetchMyProjects = async () => {
-            if (!isAuthenticated) {
-                console.log('Not authenticated, skipping fetch');
-                return;
-            }
+            if (!isAuthenticated || !currentUser) return;
 
-            if (!currentUser) {
-                console.log('No current user, skipping fetch');
-                return;
-            }
-
-            console.log('Starting to fetch projects...');
             setLoading(true);
             setError(null);
 
             try {
                 const token = localStorage.getItem('token');
-                const url = `/project/user/${encodeURIComponent(currentUser.email)}`;
-
-                const response = await backendApi.get(url, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                const response = await backendApi.get(`/project/user/${encodeURIComponent(currentUser.email)}`, {
+                    headers: { Authorization: `Bearer ${token}` }
                 });
 
-                if (response.data && response.data.success) {
-                    const projectsData = response.data.projects || [];
-
-                    setProjects(projectsData);
+                if (response.data?.success) {
+                    setProjects(response.data.projects || []);
                 } else {
-                    setError('Failed to fetch projects - API returned success: false');
+                    setError('Failed to fetch projects');
                 }
             } catch (error: any) {
-
                 if (error.response?.status === 401) {
                     alert('Session expired. Please log in again.');
                     navigate('/login');
@@ -165,8 +134,7 @@ const MyProjects = () => {
                     setProjects([]);
                     setError(null);
                 } else {
-                    const errorMessage = `Failed to load projects: ${error.response?.data?.error || error.message}`;
-                    setError(errorMessage);
+                    setError(`Failed to load projects: ${error.response?.data?.error || error.message}`);
                 }
             } finally {
                 setLoading(false);
@@ -181,15 +149,6 @@ const MyProjects = () => {
         setEditingProject({ ...project });
         setIsEditMode(false);
         setShowModal(true);
-    };
-
-    const handleEditProject = () => {
-        setIsEditMode(true);
-    };
-
-    const handleCancelEdit = () => {
-        setIsEditMode(false);
-        setEditingProject(selectedProject ? { ...selectedProject } : null);
     };
 
     const handleUpdateProject = async () => {
@@ -209,18 +168,11 @@ const MyProjects = () => {
                 author: editingProject.author
             };
 
-            console.log('Updating project:', projectId, updateData);
-
             const response = await backendApi.put(`/project/update/${projectId}`, updateData, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
             });
 
-            console.log('Update response:', response.data);
-
-            if (response.data && response.data.success) {
+            if (response.data?.success) {
                 const updatedProjects = projects.map(p =>
                     (p.id === projectId || p._id === projectId)
                         ? { ...p, ...updateData, updatedAt: new Date().toISOString() }
@@ -238,7 +190,6 @@ const MyProjects = () => {
                 throw new Error(response.data?.message || 'Update failed');
             }
         } catch (error: any) {
-            console.error('Error updating project:', error);
             if (error.response?.status === 401) {
                 alert('Session expired. Please log in again.');
                 navigate('/login');
@@ -251,17 +202,12 @@ const MyProjects = () => {
     };
 
     const handleDeleteProject = async (projectId: string) => {
-        if (!window.confirm('Are you sure you want to delete this project?')) {
-            return;
-        }
+        if (!window.confirm('Are you sure you want to delete this project?')) return;
 
         try {
             const token = localStorage.getItem('token');
-
             await backendApi.delete(`/project/delete/${projectId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+                headers: { Authorization: `Bearer ${token}` }
             });
 
             setProjects(projects.filter(p => p.id !== projectId && p._id !== projectId));
@@ -275,7 +221,6 @@ const MyProjects = () => {
 
             alert('Project deleted successfully!');
         } catch (error: any) {
-            console.error('Error deleting project:', error);
             if (error.response?.status === 401) {
                 alert('Session expired. Please log in again.');
                 navigate('/login');
@@ -299,28 +244,18 @@ const MyProjects = () => {
 
     const addArrayItem = (field: 'materials' | 'steps') => {
         if (!editingProject) return;
-        const newArray = [...editingProject[field], ''];
-        setEditingProject({ ...editingProject, [field]: newArray });
+        setEditingProject({ ...editingProject, [field]: [...editingProject[field], ''] });
     };
 
     const removeArrayItem = (field: 'materials' | 'steps', index: number) => {
         if (!editingProject) return;
-        const newArray = editingProject[field].filter((_, i) => i !== index);
-        setEditingProject({ ...editingProject, [field]: newArray });
+        setEditingProject({ ...editingProject, [field]: editingProject[field].filter((_, i) => i !== index) });
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('username');
-        localStorage.removeItem('role');
-        localStorage.removeItem('loginTime');
+        ['token', 'refreshToken', 'username', 'role', 'loginTime'].forEach(key => localStorage.removeItem(key));
         alert('Successfully logged out!');
         navigate('/login');
-    };
-
-    const refreshProjects = () => {
-        window.location.reload();
     };
 
     if (!isAuthenticated || !currentUser) {
@@ -336,36 +271,48 @@ const MyProjects = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-4">
+
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 left-10 text-pink-500/20 animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }}>
+                    <Scissors className="w-16 h-16" />
+                </div>
+                <div className="absolute top-40 right-20 text-purple-500/20 animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }}>
+                    <PaintBucket className="w-20 h-20" />
+                </div>
+                <div className="absolute bottom-32 left-1/4 text-blue-500/20 animate-bounce" style={{ animationDelay: '2s', animationDuration: '3.5s' }}>
+                    <Palette className="w-14 h-14" />
+                </div>
+                <div className="absolute top-1/3 right-1/4 text-pink-500/20 animate-bounce" style={{ animationDelay: '1.5s', animationDuration: '3.8s' }}>
+                    <Sparkles className="w-12 h-12" />
+                </div>
+                <div className="absolute bottom-20 right-1/3 text-purple-500/20 animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '4.2s' }}>
+                    <Scissors className="w-10 h-10" />
+                </div>
+            </div>
+
+            {/* Glowing orbs */}
+            <div className="absolute top-20 left-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 right-20 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-600/5 rounded-full blur-3xl"></div>
+
+
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
                 <div className="mb-8 bg-white/80 backdrop-blur-lg rounded-3xl p-8 border border-white/40 shadow-xl">
                     <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-6">
-                            <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
-                                My Projects
-                            </h1>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={refreshProjects}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                            >
-                                <RefreshCw size={16} />
-                                Refresh
-                            </button>
-                        </div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                            My Projects
+                        </h1>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                            <RefreshCw size={16} />
+                            Refresh
+                        </button>
                     </div>
+                    <p className="font-bold text-gray-800 text-xl">Hi, {currentUser.username ? currentUser.username.split(' ')[0] : 'User'}!</p>                </div>
 
-                    {/* User Info */}
-                    <div className="flex items-center gap-4">
-                        <div>
-                            <p className="font-bold text-gray-800 text-xl">{currentUser.username || 'User'}</p>
-                            <p className="text-sm text-gray-600 font-medium">{currentUser.email}</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Loading State */}
                 {loading && (
                     <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-12 border border-white/40 text-center shadow-xl">
                         <div className="animate-spin rounded-full h-16 w-16 border-4 border-pink-200 border-t-pink-500 mx-auto mb-6"></div>
@@ -373,20 +320,15 @@ const MyProjects = () => {
                     </div>
                 )}
 
-                {/* Error State */}
                 {error && (
                     <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-6 rounded-3xl shadow-xl mb-8">
                         <p className="font-semibold text-sm">Error: {error}</p>
-                        <button
-                            onClick={refreshProjects}
-                            className="mt-3 text-red-100 hover:text-white underline text-sm font-medium"
-                        >
+                        <button onClick={() => window.location.reload()} className="mt-3 text-red-100 hover:text-white underline text-sm font-medium">
                             Try Again
                         </button>
                     </div>
                 )}
 
-                {/* Projects Grid */}
                 {!loading && !error && (
                     <>
                         {projects.length === 0 ? (
@@ -404,7 +346,7 @@ const MyProjects = () => {
                                 >
                                     Create Your First Project
                                 </button>
-                                <div className="flex items-center gap-6 py-4">
+                                <div className="flex justify-between items-center mt-8 pt-4">
                                     <button
                                         onClick={() => navigate('/')}
                                         className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -412,7 +354,6 @@ const MyProjects = () => {
                                         <ArrowLeft size={16} />
                                         Back to Home
                                     </button>
-
                                     <button
                                         onClick={handleLogout}
                                         className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -433,7 +374,6 @@ const MyProjects = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                                     {projects.map((project) => (
                                         <div key={project.id || project._id} className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-xl border border-white/50 overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group">
-                                            {/* Project Image */}
                                             <div className="h-52 bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex items-center justify-center relative overflow-hidden">
                                                 {project.imageUrl ? (
                                                     <img
@@ -452,7 +392,6 @@ const MyProjects = () => {
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             </div>
 
-                                            {/* Project Info */}
                                             <div className="p-6">
                                                 <h3 className="text-lg font-bold text-gray-800 mb-3 truncate group-hover:text-purple-600 transition-colors duration-300">
                                                     {project.title}
@@ -481,7 +420,6 @@ const MyProjects = () => {
                                                     </span>
                                                 </div>
 
-                                                {/* Action Buttons */}
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => handleViewProject(project)}
@@ -506,7 +444,6 @@ const MyProjects = () => {
                     </>
                 )}
 
-                {/* Project Detail/Edit Modal */}
                 {showModal && selectedProject && editingProject && (
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                         <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden border border-white/50">
@@ -518,7 +455,7 @@ const MyProjects = () => {
                                     <div className="flex items-center gap-2">
                                         {!isEditMode ? (
                                             <button
-                                                onClick={handleEditProject}
+                                                onClick={() => setIsEditMode(true)}
                                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg text-sm font-semibold transition-all duration-300"
                                             >
                                                 <Edit size={16} />
@@ -535,7 +472,10 @@ const MyProjects = () => {
                                                     {updating ? 'Saving...' : 'Save'}
                                                 </button>
                                                 <button
-                                                    onClick={handleCancelEdit}
+                                                    onClick={() => {
+                                                        setIsEditMode(false);
+                                                        setEditingProject(selectedProject ? { ...selectedProject } : null);
+                                                    }}
                                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg text-sm font-semibold transition-all duration-300"
                                                 >
                                                     <X size={16} />
@@ -559,17 +499,15 @@ const MyProjects = () => {
                             <div className="p-8 overflow-y-auto max-h-[calc(90vh-140px)]">
                                 {selectedProject.imageUrl && (
                                     <div className="mb-8 flex justify-center">
-                                        <div className="pb-6 flex justify-center w-full max-w-2xl">
-                                            <img
-                                                src={selectedProject.imageUrl}
-                                                alt={selectedProject.title}
-                                                className="w-80 h-80 object-cover rounded-3xl shadow-xl"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.style.display = 'none';
-                                                }}
-                                            />
-                                        </div>
+                                        <img
+                                            src={selectedProject.imageUrl}
+                                            alt={selectedProject.title}
+                                            className="w-80 h-80 object-cover rounded-3xl shadow-xl"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
+                                            }}
+                                        />
                                     </div>
                                 )}
 
@@ -585,7 +523,7 @@ const MyProjects = () => {
                                                         type="text"
                                                         value={editingProject.title}
                                                         onChange={(e) => handleInputChange('title', e.target.value)}
-                                                        className=" text-sm w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                        className="text-sm w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                                     />
                                                 </div>
                                                 <div>

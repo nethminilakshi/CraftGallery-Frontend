@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import {Upload, Plus, X, CheckCircle, AlertCircle, Sparkles, Heart, Mail, Send} from 'lucide-react';
+import {
+    Upload,
+    Plus,
+    X,
+    CheckCircle,
+    AlertCircle,
+    Sparkles,
+    Heart,
+    Mail,
+    Send,
+    Scissors,
+    PaintBucket, Palette
+} from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../../slices/rootReducer';
@@ -169,6 +181,7 @@ const ProjectUploadForm = () => {
 
             return () => clearTimeout(timer);
         }
+        return undefined;
     }, [uploadSuccess, uploadedProject, dispatch]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -301,6 +314,30 @@ const ProjectUploadForm = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-fuchsia-100 via-purple-100 to-blue-200 p-4">
+
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 left-10 text-pink-500/20 animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }}>
+                    <Scissors className="w-16 h-16" />
+                </div>
+                <div className="absolute top-40 right-20 text-purple-500/20 animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }}>
+                    <PaintBucket className="w-20 h-20" />
+                </div>
+                <div className="absolute bottom-32 left-1/4 text-blue-500/20 animate-bounce" style={{ animationDelay: '2s', animationDuration: '3.5s' }}>
+                    <Palette className="w-14 h-14" />
+                </div>
+                <div className="absolute top-1/3 right-1/4 text-pink-500/20 animate-bounce" style={{ animationDelay: '1.5s', animationDuration: '3.8s' }}>
+                    <Sparkles className="w-12 h-12" />
+                </div>
+                <div className="absolute bottom-20 right-1/3 text-purple-500/20 animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '4.2s' }}>
+                    <Scissors className="w-10 h-10" />
+                </div>
+            </div>
+
+            {/* Glowing orbs */}
+            <div className="absolute top-20 left-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 right-20 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-600/5 rounded-full blur-3xl"></div>
+
             <div className="max-w-5xl mx-auto">
                 {/*  Success Message */}
                 {showSuccessMessage && uploadedProject && (
@@ -361,6 +398,7 @@ const ProjectUploadForm = () => {
                 {/* Main Form Container */}
                 <div className="bg-white/90 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/40 overflow-hidden">
 
+
                     <div className="bg-gradient-to-r from-fuchsia-600 via-purple-700 to-blue-600 p-8 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-full">
                             <div className="absolute top-4 left-8 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
@@ -385,23 +423,22 @@ const ProjectUploadForm = () => {
                                     <div className="flex items-center gap-3 mb-2">
                                         <div>
                                             <p className="font-bold text-white text-lg">Welcome, {currentUser.username || 'Creator'}!</p>
-                                            <p className="text-purple-200 text-sm">{currentUser.email}</p>
                                         </div>
                                     </div>
-                                    {currentUser.exp && (
-                                        <p className="text-xs text-purple-300">
-                                            Session expires: {new Date(currentUser.exp * 1000).toLocaleString()}
-                                        </p>
-                                    )}
+                                    {/*{currentUser.exp && (*/}
+                                    {/*    <p className="text-xs text-purple-300">*/}
+                                    {/*        Session expires: {new Date(currentUser.exp * 1000).toLocaleString()}*/}
+                                    {/*    </p>*/}
+                                    {/*)}*/}
 
-                                    {process.env.NODE_ENV === 'development' && (
-                                        <button
-                                            onClick={() => setShowEmailTest(!showEmailTest)}
-                                            className="mt-2 text-xs text-purple-200 hover:text-white underline"
-                                        >
-                                            Test Email 📧
-                                        </button>
-                                    )}
+                                    {/*{process.env.NODE_ENV === 'development' && (*/}
+                                    {/*    <button*/}
+                                    {/*        onClick={() => setShowEmailTest(!showEmailTest)}*/}
+                                    {/*        className="mt-2 text-xs text-purple-200 hover:text-white underline"*/}
+                                    {/*    >*/}
+                                    {/*        Test Email 📧*/}
+                                    {/*    </button>*/}
+                                    {/*)}*/}
                                 </div>
                             </div>
                         </div>
