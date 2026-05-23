@@ -1,17 +1,15 @@
-import {AdminMainContent} from "../MainContent/AdminMainContent.tsx";
+import { AdminMainContent } from "../MainContent/AdminMainContent.tsx";
 import AdminSidebar from "../SideBar/AdminSideBar.tsx";
 
 export function AdminDefaultLayout() {
-
-    return (
-        <>
-            <div className="flex min-h-screen bg-gray-100">
-
-                <aside className="w-64 bg-white shadow-lg">
-                    <AdminSidebar/>
-                </aside>
-                    <AdminMainContent/>
-            </div>
-        </>
-    );
+  return (
+    <>
+      <div className="flex min-h-screen bg-gray-100">
+        <aside className="w-80 bg-white shadow-lg">
+          <AdminSidebar />
+        </aside>
+        <AdminMainContent />
+      </div>
+    </>
+  );
 }
